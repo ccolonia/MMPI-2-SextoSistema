@@ -28,13 +28,14 @@ Coloque **1** en la columna correspondiente a la respuesta elegida.
 ```bash
 # Clonar el repositorio
 git clone https://github.com/ccolonia/MMPI-2-SextoSistema.git
-cd mmpi2-sistema
+cd MMPI-2-SextoSistema
 
 # Instalar dependencias
 bun install
 
 # Configurar base de datos
 cp .env.example .env
+# Edita .env con tus credenciales de base de datos
 bun run db:push
 
 # Iniciar servidor de desarrollo
@@ -43,20 +44,28 @@ bun run dev
 
 ## 🌐 Despliegue en Vercel
 
-1. Fork este repositorio
-2. Conecta tu cuenta de Vercel con GitHub
-3. Importa el proyecto desde Vercel
-4. Configura las variables de entorno:
-   - `DATABASE_URL`: URL de tu base de datos (recomendado: Turso, Neon, o Vercel Postgres)
-5. ¡Despliega!
+### Paso 1: Crear base de datos en Neon (Gratis)
 
-### Recomendación para Base de Datos
+1. Ve a https://neon.tech y crea una cuenta
+2. Crea un nuevo proyecto
+3. Copia la **Connection string** (la que termina en `/neondb?sslmode=require`)
 
-Para producción en Vercel, se recomienda usar una base de datos persistente:
+### Paso 2: Configurar Vercel
 
-- **Turso** (SQLite compatible, gratis): https://turso.tech
-- **Neon** (PostgreSQL serverless, gratis): https://neon.tech
-- **Vercel Postgres**: Disponible en el dashboard de Vercel
+1. Ve a https://vercel.com e inicia sesión con GitHub
+2. Importa el repositorio: `ccolonia/MMPI-2-SextoSistema`
+3. En **Environment Variables**, agrega:
+   - `DATABASE_URL` = `postgresql://...neon.tech/neondb?sslmode=require`
+   - `DIRECT_DATABASE_URL` = `postgresql://...neon.tech/neondb?sslmode=require`
+   *(Usa la misma URL para ambas variables)*
+
+4. Haz clic en **Deploy**
+
+### Paso 3: Verificar
+
+1. Espera a que el build termine (2-3 minutos)
+2. Visita tu aplicación: `https://tu-proyecto.vercel.app`
+3. La base de datos se crea automáticamente durante el build
 
 ## 📊 Escalas Incluidas
 

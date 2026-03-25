@@ -6,9 +6,9 @@ generator client {
 }
 
 datasource db {
-  provider  = "sqlite"
+  provider  = "postgresql"
   url       = env("DATABASE_URL")
-  directUrl = env("DATABASE_URL")
+  directUrl = env("DIRECT_DATABASE_URL")
 }
 
 // Pregunta del cuestionario MMPI-2
@@ -17,10 +17,10 @@ model PreguntaMMPI2 {
   numero      Int      @unique // 1-567
   texto       String   // Texto de la pregunta
   orden       Int      @default(0) // Orden de presentación
-  
+
   // Respuestas asociadas
   respuestas  Respuesta[]
-  
+
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 }
@@ -37,10 +37,10 @@ model Evaluado {
   contextoEval  String?  // "clinico" | "forense" | "laboral" | "investigacion"
   evaluador     String?
   institucion   String?
-  
+
   // Relaciones
   protocolos    ProtocoloMMPI2[]
-  
+
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
 }
@@ -52,14 +52,14 @@ model ProtocoloMMPI2 {
   evaluado        Evaluado? @relation(fields: [evaluadoId], references: [id])
   fechaEvaluacion DateTime  @default(now())
   completado      Boolean   @default(false)
-  
+
   // Respuestas
   respuestas      Respuesta[]
-  
+
   // Puntajes calculados
   puntajesBrutos  PuntajeBruto?
   puntajesT       PuntajeT?
-  
+
   createdAt       DateTime  @default(now())
   updatedAt       DateTime  @updatedAt
 }
@@ -68,16 +68,16 @@ model ProtocoloMMPI2 {
 model Respuesta {
   id            String   @id @default(cuid())
   protocoloId   String
-  protocolo     ProtocoloMMPI2 @relation(fields: [protocoloId], references: [id])
+  protocolo     ProtocoloMMPI2 @relation(fields: [protocoloId], references: [id], onDelete: Cascade)
   preguntaId    Int
   pregunta      PreguntaMMPI2 @relation(fields: [preguntaId], references: [id])
-  
+
   // Respuesta: true = Verdadero, false = Falso, null = Sin responder
   verdadero     Boolean?
-  
+
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
-  
+
   @@unique([protocoloId, preguntaId])
 }
 
@@ -85,11 +85,11 @@ model Respuesta {
 model PuntajeBruto {
   id            String   @id @default(cuid())
   protocoloId   String   @unique
-  protocolo     ProtocoloMMPI2 @relation(fields: [protocoloId], references: [id])
-  
+  protocolo     ProtocoloMMPI2 @relation(fields: [protocoloId], references: [id], onDelete: Cascade)
+
   // Omisiones
   omisiones     Int      @default(0)
-  
+
   // Escalas de validez (puntajes brutos)
   lBruto        Int      @default(0)
   fBruto        Int      @default(0)
@@ -103,7 +103,7 @@ model PuntajeBruto {
   sBruto        Int      @default(0)
   sdBruto       Int      @default(0)
   soBruto       Int      @default(0)
-  
+
   // Escalas clínicas básicas (puntajes brutos)
   hsBruto       Int      @default(0) // Escala 1 - Hipocondriasis
   dBruto        Int      @default(0) // Escala 2 - Depresión
@@ -115,7 +115,7 @@ model PuntajeBruto {
   scBruto       Int      @default(0) // Escala 8 - Esquizofrenia
   maBruto       Int      @default(0) // Escala 9 - Hipomanía
   siBruto       Int      @default(0) // Escala 0 - Introversión Social
-  
+
   // Escalas suplementarias (puntajes brutos)
   aBruto        Int      @default(0)
   rBruto        Int      @default(0)
@@ -132,7 +132,7 @@ model PuntajeBruto {
   mdsBruto      Int      @default(0)
   apsBruto      Int      @default(0)
   aasBruto      Int      @default(0)
-  
+
   // Escalas de contenido (puntajes brutos)
   anxBruto      Int      @default(0)
   frsBruto      Int      @default(0)
@@ -149,7 +149,7 @@ model PuntajeBruto {
   famBruto      Int      @default(0)
   wrkBruto      Int      @default(0)
   trtBruto      Int      @default(0)
-  
+
   // Subescalas Harris-Lingoes (puntajes brutos)
   d1Bruto       Int      @default(0)
   d2Bruto       Int      @default(0)
@@ -182,7 +182,7 @@ model PuntajeBruto {
   si1Bruto      Int      @default(0)
   si2Bruto      Int      @default(0)
   si3Bruto      Int      @default(0)
-  
+
   // Wiener-Harmon (Obvidad/Sutilidad)
   dOBruto       Int      @default(0)
   dSBruto       Int      @default(0)
@@ -194,7 +194,7 @@ model PuntajeBruto {
   paSBruto      Int      @default(0)
   maOBruto      Int      @default(0)
   maSBruto      Int      @default(0)
-  
+
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
 }
@@ -203,8 +203,8 @@ model PuntajeBruto {
 model PuntajeT {
   id            String   @id @default(cuid())
   protocoloId   String   @unique
-  protocolo     ProtocoloMMPI2 @relation(fields: [protocoloId], references: [id])
-  
+  protocolo     ProtocoloMMPI2 @relation(fields: [protocoloId], references: [id], onDelete: Cascade)
+
   // Escalas de validez
   lT            Int      @default(0)
   fT            Int      @default(0)
@@ -213,7 +213,7 @@ model PuntajeT {
   fpT           Int      @default(0)
   vrinT         Int      @default(0)
   trinT         Int      @default(0)
-  
+
   // Escalas clínicas básicas
   hsT           Int      @default(0)
   dT            Int      @default(0)
@@ -225,7 +225,7 @@ model PuntajeT {
   scT           Int      @default(0)
   maT           Int      @default(0)
   siT           Int      @default(0)
-  
+
   // Escalas suplementarias
   aT            Int      @default(0)
   rT            Int      @default(0)
@@ -242,7 +242,7 @@ model PuntajeT {
   mdsT          Int      @default(0)
   apsT          Int      @default(0)
   aasT          Int      @default(0)
-  
+
   // Escalas de contenido
   anxT          Int      @default(0)
   frsT          Int      @default(0)
@@ -259,7 +259,7 @@ model PuntajeT {
   famT          Int      @default(0)
   wrkT          Int      @default(0)
   trtT          Int      @default(0)
-  
+
   // Subescalas Harris-Lingoes
   d1T           Int      @default(0)
   d2T           Int      @default(0)
@@ -292,7 +292,7 @@ model PuntajeT {
   si1T          Int      @default(0)
   si2T          Int      @default(0)
   si3T          Int      @default(0)
-  
+
   // Wiener-Harmon
   dOT           Int      @default(0)
   dST           Int      @default(0)
@@ -304,7 +304,7 @@ model PuntajeT {
   paST          Int      @default(0)
   maOT          Int      @default(0)
   maST          Int      @default(0)
-  
+
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
 }
@@ -312,7 +312,7 @@ model PuntajeT {
 // Informe MMPI-2 guardado
 model InformeMMPI2 {
   id                String   @id @default(cuid())
-  
+
   // Datos del evaluado
   nombreEvaluado    String?
   edad              Int?
@@ -322,7 +322,7 @@ model InformeMMPI2 {
   fechaEvaluacion   String?
   evaluador         String?
   institucion       String?
-  
+
   // Escalas de validez
   omisiones         Int      @default(0)
   vrint             Int      @default(50)
@@ -334,7 +334,7 @@ model InformeMMPI2 {
   f_K               Int      @default(0)
   lBruto            Int      @default(0)
   kBruto            Int      @default(0)
-  
+
   // Escalas clínicas (Puntajes T)
   hsT               Int      @default(50)
   dT                Int      @default(50)
@@ -346,16 +346,16 @@ model InformeMMPI2 {
   scT               Int      @default(50)
   maT               Int      @default(50)
   siT               Int      @default(50)
-  
+
   // Resultado del análisis (JSON completo)
   analysisResult    String   // JSON stringificado
-  
+
   // PDF generado (base64 o path)
   pdfPath           String?
-  
+
   // Metadatos
   notas             String?  // Notas adicionales del evaluador
-  
+
   createdAt         DateTime @default(now())
   updatedAt         DateTime @updatedAt
 }
