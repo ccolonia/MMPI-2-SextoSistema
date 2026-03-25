@@ -42,6 +42,7 @@ import {
 } from 'lucide-react'
 import { calificarMMPI2, RespuestaItem } from '@/lib/mmpi2/calificacion'
 import { convertirAT } from '@/lib/mmpi2/tablas-conversion'
+import { generateMMPI2PDF, downloadPDF } from '@/lib/pdf-generator'
 
 // Importar preguntas directamente del JSON
 import preguntasData from '@/lib/mmpi2/preguntas.json'
@@ -464,7 +465,7 @@ export default function Home() {
   // Exportar a PDF
   const handleExportPdf = async () => {
     if (!analysisResult) return
-    
+
     setExportingPdf(true)
     try {
       // Preparar datos completos para el PDF
@@ -473,6 +474,7 @@ export default function Home() {
         omisiones: protocol.omisiones,
         vrint: protocol.vrint,
         trint: protocol.trint,
+        fBruto: protocol.fBruto,
         fT: protocol.fT,
         fbT: protocol.fbT,
         fpBruto: protocol.fpBruto,
@@ -484,27 +486,11 @@ export default function Home() {
         escalasContenido: protocol.escalasContenido,
         analysisResult: analysisResult
       }
-      
-      const response = await fetch('/api/mmpi2/report', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(pdfData)
-      })
-      
-      if (!response.ok) {
-        throw new Error('Error al generar PDF')
-      }
-      
-      // Descargar el PDF
-      const blob = await response.blob()
-      const url = window.URL.createObjectURL(blob)
-      const a = document.createElement('a')
-      a.href = url
-      a.download = `Informe_MMPI2_${protocol.demograficos.nombreEvaluado || 'Evaluado'}_${new Date().toISOString().split('T')[0]}.pdf`
-      document.body.appendChild(a)
-      a.click()
-      window.URL.revokeObjectURL(url)
-      document.body.removeChild(a)
+
+      // Generar PDF localmente con jsPDF
+      const blob = await generateMMPI2PDF(pdfData)
+      const filename = `Informe_MMPI2_${protocol.demograficos.nombreEvaluado || 'Evaluado'}_${new Date().toISOString().split('T')[0]}.pdf`
+      downloadPDF(blob, filename)
     } catch (error) {
       console.error('Error exportando PDF:', error)
       alert('Error al generar el PDF. Por favor intente nuevamente.')
@@ -516,7 +502,7 @@ export default function Home() {
   // Vista previa del PDF
   const handlePreviewPdf = async () => {
     if (!analysisResult) return
-    
+
     setExportingPdf(true)
     try {
       // Preparar datos completos para el PDF
@@ -525,6 +511,7 @@ export default function Home() {
         omisiones: protocol.omisiones,
         vrint: protocol.vrint,
         trint: protocol.trint,
+        fBruto: protocol.fBruto,
         fT: protocol.fT,
         fbT: protocol.fbT,
         fpBruto: protocol.fpBruto,
@@ -536,19 +523,9 @@ export default function Home() {
         escalasContenido: protocol.escalasContenido,
         analysisResult: analysisResult
       }
-      
-      const response = await fetch('/api/mmpi2/report', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(pdfData)
-      })
-      
-      if (!response.ok) {
-        throw new Error('Error al generar PDF')
-      }
-      
-      // Crear URL para la vista previa
-      const blob = await response.blob()
+
+      // Generar PDF localmente con jsPDF
+      const blob = await generateMMPI2PDF(pdfData)
       const url = window.URL.createObjectURL(blob)
       setPdfPreviewUrl(url)
     } catch (error) {
