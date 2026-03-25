@@ -1,0 +1,127 @@
+{
+  "demograficos": {
+    "sexo": "masculino",
+    "edad": 35,
+    "contextoEvaluacion": "clinico",
+    "motivoConsulta": "Evaluacion psicologica solicitada por el evaluado para comprender mejor su funcionamiento emocional y patrones de personalidad.",
+    "fechaEvaluacion": "2025-03-16",
+    "nombreEvaluado": "Juan Carlos Perez Garcia",
+    "evaluador": "Dr. Maria Rodriguez",
+    "institucion": "Centro de Psicologia Clinica"
+  },
+  "omisiones": 5,
+  "vrint": 52,
+  "trint": 58,
+  "fBruto": 12,
+  "fT": 58,
+  "fbT": 55,
+  "fpBruto": 2,
+  "f_K": 1,
+  "lBruto": 4,
+  "kBruto": 14,
+  "escalasClinicas": {
+    "Hs": 62,
+    "D": 78,
+    "Hy": 68,
+    "Pd": 55,
+    "Mf": 48,
+    "Pa": 58,
+    "Pt": 72,
+    "Sc": 65,
+    "Ma": 52,
+    "Si": 70
+  },
+  "escalasSuplementarias": {
+    "A": 68,
+    "R": 45,
+    "Es": 42,
+    "MACR": 48,
+    "OH": 55,
+    "PK": 52,
+    "PS": 50,
+    "Do": 58,
+    "Re": 52
+  },
+  "escalasContenido": {
+    "ANX": 72,
+    "FRS": 45,
+    "OBS": 68,
+    "DEP": 75,
+    "HEA": 62,
+    "BIZ": 48,
+    "ANG": 52,
+    "CYN": 58,
+    "ASP": 42,
+    "TPA": 55,
+    "LSE": 65,
+    "SOD": 68,
+    "FAM": 55,
+    "WRK": 48,
+    "TRT": 42
+  },
+  "analysisResult": {
+    "validez": {
+      "omisionesStatus": "confiable",
+      "omisionesMensaje": "5 omisiones: Protocolo confiable para interpretacion.",
+      "vrinStatus": "normal",
+      "vrinMensaje": "VRIN T=52: Consistencia adecuada en las respuestas.",
+      "trinStatus": "normal",
+      "trinMensaje": "TRIN T=58: Sin tendencia de respuesta significativa.",
+      "fStatus": "normal",
+      "fMensaje": "F T=58: Puntuacion dentro de limites normales.",
+      "fbStatus": "normal",
+      "fbMensaje": "Fb T=55: Segmento posterior dentro de limites normales.",
+      "fFbConsistencia": "consistente",
+      "fFbMensaje": "Diferencia F-Fb = 3T: Consistencia adecuada entre segmentos del protocolo.",
+      "fpStatus": "normal",
+      "fpMensaje": "F(p) bruto = 2: Sin evidencia de simulacion de psicopatologia.",
+      "fKStatus": "normal",
+      "fKMensaje": "Indice F-K = 1: Dentro de limites esperados.",
+      "lStatus": "normal",
+      "lMensaje": "L bruto = 4: Sin intento evidente de presentacion socialmente deseable.",
+      "kStatus": "normal",
+      "kMensaje": "K bruto = 14: Nivel de defensividad apropiado.",
+      "conclusionGeneral": "valido",
+      "justificacionValidez": "El protocolo es VALIDO. Las escalas de validez indican una respuesta consistente y veraz del evaluado. Se puede proceder con la interpretacion clinica."
+    },
+    "escalasClinicasInterpretadas": [
+      {"codigo": "D", "nombre": "Depresion", "puntajeT": 78, "elevacion": "muy_elevada", "interpretacion": "ELEVACION SIGNIFICATIVA (T=78): Estado de animo deprimido con sentimientos de desesperanza, culpa y desvalorizacion. Esta elevacion marcada indica presencia clara de las caracteristicas descritas, con impacto significativo en el funcionamiento del evaluado. Se requiere atencion clinica prioritaria.", "correlatos": ["Estado de animo deprimido", "Ideacion suicida potencial", "Baja autoestima"], "recomendaciones": ["Evaluar riesgo suicida de manera directa", "Considerar derivacion para evaluacion psicofarmacologica", "Abordaje cognitivo-conductual para depresion"]},
+      {"codigo": "Pt", "nombre": "Psicastenia", "puntajeT": 72, "elevacion": "elevada", "interpretacion": "ELEVACION MODERADA (T=72): Ansiedad, tension, rumiacion, indecision, perfeccionismo y malestar psicologico general. Se observan rasgos y sintomas en grado clinicamente significativo que merecen atencion.", "correlatos": ["Ansiedad generalizada", "Rumiacion excesiva", "Perfeccionismo"], "recomendaciones": ["Tecnicas de manejo de ansiedad y mindfulness", "Exposicion gradual a situaciones temidas", "Posible abordaje psicofarmacologico"]},
+      {"codigo": "Si", "nombre": "Interversion Social", "puntajeT": 70, "elevacion": "elevada", "interpretacion": "ELEVACION MODERADA (T=70): Introversion social marcada con incomodidad significativa en situaciones interpersonales. Se observan rasgos y sintomas en grado clinicamente significativo que merecen atencion.", "correlatos": ["Incomodidad social", "Red social limitada", "Preferencia por actividades solitarias"], "recomendaciones": ["Diferenciar introversión de fobia social o evitación", "Entrenamiento en habilidades sociales si es apropiado", "Respetar preferencia por actividades solitarias si no causa malestar"]},
+      {"codigo": "Hy", "nombre": "Histeria", "puntajeT": 68, "elevacion": "elevada", "interpretacion": "ELEVACION MODERADA (T=68): Tendencia a responder con sintomas somaticos ante conflictos emocionales, inmadurez. Se observan rasgos y sintomas en grado clinicamente significativo que merecen atencion.", "correlatos": ["Conversion somatica", "Inmadurez emocional", "Necesidad de atencion"], "recomendaciones": ["Establecer alianza terapéutica sólida antes de confrontar defensas", "Trabajar gradualmente en reconocimiento de emociones"]},
+      {"codigo": "Sc", "nombre": "Esquizofrenia", "puntajeT": 65, "elevacion": "elevada", "interpretacion": "ELEVACION MODERADA (T=65): Pensamiento alterado, aislamiento social, posible desorganizacion psicótica. Se observan rasgos y sintomas en grado clinicamente significativo que merecen atencion.", "correlatos": ["Pensamiento idiosincrático", "Aislamiento social", "Experiencias inusuales"], "recomendaciones": ["Evaluación psiquiátrica para descartar trastorno psicótico", "Explorar experiencias perceptuales inusuales"]}
+    ],
+    "escalasElevadas": ["D", "Pt", "Si", "Hy", "Sc"],
+    "codigoPerfil": {
+      "codigo": "27/72",
+      "escalasInvolucradas": ["D", "Pt"],
+      "definicion": "bien_definido",
+      "interpretacion": "Perfil de ansioso-depresivo: Ansiedad y depresion combinadas con rumiacion excesiva. Buena conciencia de problemas.",
+      "correlatosClinicos": ["Depresión ansiosa", "Rumiación excesiva", "Alta conciencia de problemas"],
+      "pronostico": "Pronóstico moderadamente favorable: Buena conciencia de problemas facilita el tratamiento. Perfil bien definido aumenta la confiabilidad de la interpretación."
+    },
+    "interpretacionSuplementarias": [
+      {"codigo": "A", "nombre": "Ansiedad", "puntajeT": 68, "elevacion": "elevada", "interpretacion": "Nivel elevado de ansiedad generalizada y tensión emocional.", "correlatos": ["Ansiedad subjetiva intensa", "Tensión muscular", "Preocupación excesiva"], "recomendaciones": ["Considerar en la formulación clínica integrada"]},
+      {"codigo": "Es", "nombre": "Fortaleza del Yo", "puntajeT": 42, "elevacion": "normal", "interpretacion": "Fortaleza del yo reducida, vulnerabilidad al estrés.", "correlatos": ["Vulnerabilidad al estrés", "Menor capacidad de recuperación"], "recomendaciones": []}
+    ],
+    "interpretacionContenido": [
+      {"codigo": "DEP", "nombre": "Depresion", "puntajeT": 75, "elevacion": "elevada", "interpretacion": "Elevación significativa (T=75): El evaluado reporta problemas en el área de depresión.", "correlatos": ["Indicador de dificultades en depresión"], "recomendaciones": ["Abordar en el contexto terapéutico"]},
+      {"codigo": "ANX", "nombre": "Ansiedad", "puntajeT": 72, "elevacion": "elevada", "interpretacion": "Elevación significativa (T=72): El evaluado reporta problemas en el área de ansiedad.", "correlatos": ["Indicador de dificultades en ansiedad"], "recomendaciones": ["Abordar en el contexto terapéutico"]}
+    ],
+    "formulacionClinica": {
+      "validezProtocolo": "El protocolo es VALIDO. Las escalas de validez indican una respuesta consistente y veraz del evaluado. Se puede proceder con la interpretación clínica.",
+      "perfilPersonalidad": "El perfil presenta un código 27/72 (bien definido). Perfil de ansioso-depresivo: Ansiedad y depresion combinadas con rumiacion excesiva. Buena conciencia de problemas. Las escalas más elevadas son D, Pt, lo que indica presencia de características relacionadas con Depresión.",
+      "areasAfectadas": {
+        "cognitivo": "Patrón de rumiación excesiva y preocupación persistente. Dificultad para la toma de decisiones debido a análisis excesivo. Posible perfeccionismo que interfiere en el funcionamiento cognitivo eficiente.",
+        "afectivo": "Estado de ánimo significativamente deprimido con sentimientos de desesperanza, culpa y desvalorización. Anhedonia marcada con disminución de la capacidad de experimentar placer. Se requiere evaluación de riesgo suicida.",
+        "conductual": "Patrón conductual dentro de parámetros esperados. No se observan indicadores de conducta desadaptativa significativa.",
+        "interpersonal": "Introversión social marcada con incomodidad significativa en situaciones interpersonales. Red social limitada, dificultad para expresar opiniones y preferencia por actividades solitarias.",
+        "somatico": "Sin quejas somáticas significativas identificadas. El área de salud física aparece dentro de parámetros esperados."
+      },
+      "recursosFortalezas": ["Nivel adecuado de defensividad que permite trabajo terapéutico", "Buena conciencia de problemas que facilita el tratamiento"],
+      "riesgos": ["Evaluar riesgo suicida dada elevación significativa en escala de Depresión"],
+      "pronostico": "Pronóstico moderadamente favorable: Buena conciencia de problemas facilita el tratamiento. Perfil bien definido aumenta la confiabilidad de la interpretación.",
+      "recomendacionesTerapeuticas": ["Abordaje psicoterapéutico con enfoque en estado de ánimo depresivo", "Considerar evaluación para tratamiento psicofarmacológico", "Técnicas de manejo de ansiedad y mindfulness", "Seguimiento psicológico periódico"]
+    }
+  }
+}

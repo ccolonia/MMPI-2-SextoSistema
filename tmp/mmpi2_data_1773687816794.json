@@ -1,0 +1,518 @@
+{
+  "demograficos": {
+    "sexo": "masculino",
+    "edad": 30,
+    "contextoEvaluacion": "clinico",
+    "motivoConsulta": "",
+    "fechaEvaluacion": "2026-03-16",
+    "nombreEvaluado": "",
+    "evaluador": "",
+    "institucion": ""
+  },
+  "omisiones": 0,
+  "fT": 55,
+  "lBruto": 10,
+  "kBruto": 19,
+  "escalasClinicas": {
+    "Hs": 54,
+    "D": 80,
+    "Hy": 75,
+    "Pd": 68,
+    "Mf": 77,
+    "Pa": 79,
+    "Pt": 81,
+    "Sc": 84,
+    "Ma": 81,
+    "Si": 83
+  },
+  "analysisResult": {
+    "validez": {
+      "omisionesStatus": "confiable",
+      "omisionesMensaje": "0 omisiones: Protocolo confiable para interpretación.",
+      "vrinStatus": "normal",
+      "vrinMensaje": "VRIN T=50: Consistencia adecuada en las respuestas.",
+      "trinStatus": "normal",
+      "trinMensaje": "TRIN T=50: Sin tendencia de respuesta significativa.",
+      "fStatus": "normal",
+      "fMensaje": "F T=55: Puntuación dentro de límites normales.",
+      "fbStatus": "normal",
+      "fbMensaje": "Fb T=50: Segmento posterior dentro de límites normales.",
+      "fFbConsistencia": "consistente",
+      "fFbMensaje": "Diferencia F-Fb = 5T: Consistencia adecuada entre segmentos del protocolo.",
+      "fpStatus": "normal",
+      "fpMensaje": "F(p) bruto = 3: Sin evidencia de simulación de psicopatología.",
+      "fKStatus": "normal",
+      "fKMensaje": "Índice F-K = 0: Dentro de límites esperados.",
+      "lStatus": "elevado",
+      "lMensaje": "L bruto = 10: Intento de presentar una imagen socialmente deseable. Defensividad elevada.",
+      "kStatus": "elevado",
+      "kMensaje": "K bruto = 19: Defensividad elevada. Tendencia a minimizar dificultades.",
+      "conclusionGeneral": "valido_reservas",
+      "justificacionValidez": "El protocolo es VÁLIDO CON RESERVAS. Se detectaron: defensividad elevada. Interpretar con cautela y considerar estas limitaciones."
+    },
+    "escalasClinicasInterpretadas": [
+      {
+        "codigo": "Hs",
+        "nombre": "Hipocondriasis",
+        "puntajeT": 54,
+        "elevacion": "normal",
+        "interpretacion": "PUNTAJE NORMAL (T=54): Dentro del rango esperado para la población general.",
+        "correlatos": [],
+        "recomendaciones": []
+      },
+      {
+        "codigo": "D",
+        "nombre": "Depresión",
+        "puntajeT": 80,
+        "elevacion": "muy_elevada",
+        "interpretacion": "ELEVACIÓN SIGNIFICATIVA (T=80): Depresión clínica, baja autoestima, pesimismo marcado, anhedonia. Sentimientos de desesperanza, culpa excesiva y desvalorización personal. Esta elevación marcada indica presencia clara de las características descritas, con impacto significativo en el funcionamiento del evaluado. Se requiere atención clínica prioritaria.",
+        "correlatos": [
+          "Estado de ánimo deprimido persistente",
+          "Pérdida de interés en actividades placenteras",
+          "Alteraciones del sueño y apetito",
+          "Ideación pesimista y autodesvalorización",
+          "Riesgo de ideación suicida",
+          "Historia de pérdidas significativas"
+        ],
+        "recomendaciones": [
+          "Evaluar riesgo suicida de manera directa",
+          "Considerar derivación para evaluación psicofarmacológica",
+          "Abordaje cognitivo-conductual para depresión"
+        ]
+      },
+      {
+        "codigo": "Hy",
+        "nombre": "Histeria",
+        "puntajeT": 75,
+        "elevacion": "elevada",
+        "interpretacion": "ELEVACIÓN MODERADA (T=75): Negación de conflictos emocionales, somatización como mecanismo de defensa, necesidad intensa de aprobación social. Tendencia a la teatralidad. Se observan rasgos y síntomas en grado clínicamente significativo que merecen atención.",
+        "correlatos": [
+          "Negación de dificultades psicológicas",
+          "Síntomas físicos que empeoran con el estrés",
+          "Necesidad intensa de atención y aprobación",
+          "Estilo interpersonal manipulador sutil",
+          "Respuesta inicial positiva al tratamiento pero recaídas frecuentes",
+          "Evasión de responsabilidad personal"
+        ],
+        "recomendaciones": [
+          "Establecer alianza terapéutica sólida antes de confrontar defensas",
+          "Trabajar gradualmente en reconocimiento de emociones",
+          "Atención a posibles recaídas ante situaciones estresantes"
+        ]
+      },
+      {
+        "codigo": "Pd",
+        "nombre": "Desviación Psicopática",
+        "puntajeT": 68,
+        "elevacion": "elevada",
+        "interpretacion": "ELEVACIÓN MODERADA (T=68): Impulsividad, desacato a normas sociales, externalización de responsabilidades, tendencias manipuladoras. Historia de conflictos con la autoridad. Se observan rasgos y síntomas en grado clínicamente significativo que merecen atención.",
+        "correlatos": [
+          "Historia de conflictos con figuras de autoridad",
+          "Dificultades laborales y legales",
+          "Relaciones interpersonales inestables",
+          "Impulsividad y toma de riesgos",
+          "Externalización de la responsabilidad",
+          "Posible abuso de sustancias"
+        ],
+        "recomendaciones": [
+          "Evaluar conducta antisocial y riesgo legal",
+          "Descartar abuso de sustancias",
+          "Establecer límites claros en el setting terapéutico"
+        ]
+      },
+      {
+        "codigo": "Mf",
+        "nombre": "Masculinidad-Feminidad",
+        "puntajeT": 77,
+        "elevacion": "elevada",
+        "interpretacion": "ELEVACIÓN MODERADA (T=77): Intereses y actitudes tradicionales del género opuesto. En hombres: sensibilidad estética, intereses artísticos. En mujeres: assertividad, competitividad. Se observan rasgos y síntomas en grado clínicamente significativo que merecen atención.",
+        "correlatos": [
+          "Intereses y valores no convencionales para su género",
+          "Sensibilidad estética y artística",
+          "Posibles conflictos de identidad de género",
+          "Estilo de comunicación más expresivo",
+          "Mayor empatía y capacidad relacional"
+        ],
+        "recomendaciones": [
+          "Explorar identidad de género y rol de género en contexto cultural",
+          "Evitar presuposiciones basadas en estereotipos"
+        ]
+      },
+      {
+        "codigo": "Pa",
+        "nombre": "Paranoia",
+        "puntajeT": 79,
+        "elevacion": "elevada",
+        "interpretacion": "ELEVACIÓN MODERADA (T=79): Suspicacia, hipersensibilidad a la crítica, ideas de referencia. Tendencia a interpretar acciones ajenas como hostiles o amenazantes. Se observan rasgos y síntomas en grado clínicamente significativo que merecen atención.",
+        "correlatos": [
+          "Desconfianza marcada hacia otros",
+          "Sensibilidad excesiva a la crítica",
+          "Ideas de referencia y persecución",
+          "Dificultad para establecer vínculos terapéuticos",
+          "Quejas frecuentes de injusticias",
+          "Rigidez cognitiva y moral"
+        ],
+        "recomendaciones": [
+          "Abordar con cautela, evitando confrontación directa",
+          "Dificultad para establecer alianza terapéutica - requiere tiempo",
+          "Evaluar presencia de ideación paranoide clínicamente significativa"
+        ]
+      },
+      {
+        "codigo": "Pt",
+        "nombre": "Psicastenia",
+        "puntajeT": 81,
+        "elevacion": "muy_elevada",
+        "interpretacion": "ELEVACIÓN SIGNIFICATIVA (T=81): Ansiedad generalizada, rumiación excesiva, inseguridad marcada, tendencias obsesivas. Dificultad para relajarse y alta tensión emocional. Esta elevación marcada indica presencia clara de las características descritas, con impacto significativo en el funcionamiento del evaluado. Se requiere atención clínica prioritaria.",
+        "correlatos": [
+          "Ansiedad generalizada y crónica",
+          "Rumiación y preocupación excesiva",
+          "Síntomas obsesivo-compulsivos",
+          "Perfeccionismo autoexigente",
+          "Dificultad para tomar decisiones",
+          "Tensión muscular y fatiga crónica"
+        ],
+        "recomendaciones": [
+          "Técnicas de manejo de ansiedad y mindfulness",
+          "Exposición gradual a situaciones temidas",
+          "Posible abordaje psicofarmacológico"
+        ]
+      },
+      {
+        "codigo": "Sc",
+        "nombre": "Esquizofrenia",
+        "puntajeT": 84,
+        "elevacion": "muy_elevada",
+        "interpretacion": "ELEVACIÓN SIGNIFICATIVA (T=84): Alienación social, pensamiento no convencional, posible confusión cognitiva. Experiencias perceptuales inusuales, aislamiento emocional. Esta elevación marcada indica presencia clara de las características descritas, con impacto significativo en el funcionamiento del evaluado. Se requiere atención clínica prioritaria.",
+        "correlatos": [
+          "Pensamiento idiosincrático o bizarro",
+          "Experiencias perceptuales inusuales",
+          "Aislamiento social y afecto embotado",
+          "Dificultades de atención y concentración",
+          "Historia de tratamiento psiquiátrico",
+          "Posible desorganización conductual"
+        ],
+        "recomendaciones": [
+          "Evaluación psiquiátrica para descartar trastorno psicótico",
+          "Explorar experiencias perceptuales inusuales",
+          "Considerar necesidad de apoyo social intensivo"
+        ]
+      },
+      {
+        "codigo": "Ma",
+        "nombre": "Hipomanía",
+        "puntajeT": 81,
+        "elevacion": "muy_elevada",
+        "interpretacion": "ELEVACIÓN SIGNIFICATIVA (T=81): Energía expansiva, impulsividad, euforia, desinhibición conductual. Posible grandiosidad, disminución de la necesidad de sueño. Esta elevación marcada indica presencia clara de las características descritas, con impacto significativo en el funcionamiento del evaluado. Se requiere atención clínica prioritaria.",
+        "correlatos": [
+          "Hipereactividad y desinhibición",
+          "Disminución de la necesidad de sueño",
+          "Grandiosidad y optimismo irrealista",
+          "Impulsividad en decisiones importantes",
+          "Inicio de múltiples proyectos sin completar",
+          "Riesgo de comportamiento maníaco"
+        ],
+        "recomendaciones": [
+          "Evaluar posibles episodios maníacos o hipomaníacos",
+          "Monitorizar conductas de riesgo",
+          "Abordaje que contenga impulsividad sin suprimir energía adaptativa"
+        ]
+      },
+      {
+        "codigo": "Si",
+        "nombre": "Introversión Social",
+        "puntajeT": 83,
+        "elevacion": "muy_elevada",
+        "interpretacion": "ELEVACIÓN SIGNIFICATIVA (T=83): Introversión social marcada, timidez, inhibición en situaciones sociales. Preferencia por actividades solitarias, dificultades en habilidades sociales. Esta elevación marcada indica presencia clara de las características descritas, con impacto significativo en el funcionamiento del evaluado. Se requiere atención clínica prioritaria.",
+        "correlatos": [
+          "Incomodidad en situaciones sociales",
+          "Preferencia por actividades solitarias",
+          "Dificultad para expresar opiniones",
+          "Red social limitada",
+          "Sensibilidad al rechazo",
+          "Posible evitación social clínicamente significativa"
+        ],
+        "recomendaciones": [
+          "Diferenciar introversión de fobia social o evitación",
+          "Entrenamiento en habilidades sociales si es apropiado",
+          "Respetar preferencia por actividades solitarias si no causa malestar"
+        ]
+      }
+    ],
+    "escalasElevadas": [
+      "D",
+      "Hy",
+      "Pd",
+      "Mf",
+      "Pa",
+      "Pt",
+      "Sc",
+      "Ma",
+      "Si"
+    ],
+    "codigoPerfil": {
+      "codigo": "80/08",
+      "escalasInvolucradas": [
+        "Sc",
+        "Si",
+        "Pt"
+      ],
+      "definicion": "poco_definido",
+      "interpretacion": "Código de perfil 80/08: Combinación de características de las escalas 8 y 0. Ver análisis individual de cada escala elevada para interpretación detallada.",
+      "correlatosClinicos": [
+        "Ver análisis individual de escalas elevadas"
+      ],
+      "pronostico": "Pronóstico moderado: Se requiere intervención estructurada con seguimiento cercano. Perfil poco definido reduce la certeza diagnóstica."
+    },
+    "interpretacionSuplementarias": [
+      {
+        "codigo": "A",
+        "nombre": "Ansiedad",
+        "puntajeT": 50,
+        "elevacion": "normal",
+        "interpretacion": "Nivel de ansiedad dentro de límites normales.",
+        "correlatos": [],
+        "recomendaciones": []
+      },
+      {
+        "codigo": "R",
+        "nombre": "Represión",
+        "puntajeT": 50,
+        "elevacion": "normal",
+        "interpretacion": "Puntaje dentro de límites normales (T=50).",
+        "correlatos": [],
+        "recomendaciones": []
+      },
+      {
+        "codigo": "Es",
+        "nombre": "Fortaleza del Yo",
+        "puntajeT": 50,
+        "elevacion": "normal",
+        "interpretacion": "Fortaleza del yo dentro de límites normales.",
+        "correlatos": [],
+        "recomendaciones": []
+      },
+      {
+        "codigo": "MACR",
+        "nombre": "Alcoholismo Revisado (MAC-R)",
+        "puntajeT": 50,
+        "elevacion": "normal",
+        "interpretacion": "Riesgo bajo de problemas de adicciones.",
+        "correlatos": [],
+        "recomendaciones": []
+      },
+      {
+        "codigo": "OH",
+        "nombre": "Hostilidad Sobrecontrolada",
+        "puntajeT": 50,
+        "elevacion": "normal",
+        "interpretacion": "Control de hostilidad adecuado.",
+        "correlatos": [],
+        "recomendaciones": []
+      },
+      {
+        "codigo": "PK",
+        "nombre": "TEPT - Keane",
+        "puntajeT": 50,
+        "elevacion": "normal",
+        "interpretacion": "Sin indicadores significativos de TEPT.",
+        "correlatos": [],
+        "recomendaciones": []
+      },
+      {
+        "codigo": "PS",
+        "nombre": "TEPT - Schlenger",
+        "puntajeT": 50,
+        "elevacion": "normal",
+        "interpretacion": "Puntaje dentro de límites normales (T=50).",
+        "correlatos": [],
+        "recomendaciones": []
+      },
+      {
+        "codigo": "Do",
+        "nombre": "Dominio",
+        "puntajeT": 50,
+        "elevacion": "normal",
+        "interpretacion": "Puntaje dentro de límites normales (T=50).",
+        "correlatos": [],
+        "recomendaciones": []
+      },
+      {
+        "codigo": "Re",
+        "nombre": "Responsabilidad Social",
+        "puntajeT": 50,
+        "elevacion": "normal",
+        "interpretacion": "Puntaje dentro de límites normales (T=50).",
+        "correlatos": [],
+        "recomendaciones": []
+      }
+    ],
+    "interpretacionContenido": [
+      {
+        "codigo": "ANX",
+        "nombre": "Ansiedad",
+        "puntajeT": 50,
+        "elevacion": "normal",
+        "interpretacion": "Puntaje normal (T=50): Sin indicadores significativos en ansiedad.",
+        "correlatos": [],
+        "recomendaciones": []
+      },
+      {
+        "codigo": "FRS",
+        "nombre": "Miedos",
+        "puntajeT": 50,
+        "elevacion": "normal",
+        "interpretacion": "Puntaje normal (T=50): Sin indicadores significativos en miedos.",
+        "correlatos": [],
+        "recomendaciones": []
+      },
+      {
+        "codigo": "OBS",
+        "nombre": "Obsesividad",
+        "puntajeT": 50,
+        "elevacion": "normal",
+        "interpretacion": "Puntaje normal (T=50): Sin indicadores significativos en obsesividad.",
+        "correlatos": [],
+        "recomendaciones": []
+      },
+      {
+        "codigo": "DEP",
+        "nombre": "Depresión",
+        "puntajeT": 50,
+        "elevacion": "normal",
+        "interpretacion": "Puntaje normal (T=50): Sin indicadores significativos en depresión.",
+        "correlatos": [],
+        "recomendaciones": []
+      },
+      {
+        "codigo": "HEA",
+        "nombre": "Preocupaciones de Salud",
+        "puntajeT": 50,
+        "elevacion": "normal",
+        "interpretacion": "Puntaje normal (T=50): Sin indicadores significativos en preocupaciones de salud.",
+        "correlatos": [],
+        "recomendaciones": []
+      },
+      {
+        "codigo": "BIZ",
+        "nombre": "Pensamiento Bizarro",
+        "puntajeT": 50,
+        "elevacion": "normal",
+        "interpretacion": "Puntaje normal (T=50): Sin indicadores significativos en pensamiento bizarro.",
+        "correlatos": [],
+        "recomendaciones": []
+      },
+      {
+        "codigo": "ANG",
+        "nombre": "Ira",
+        "puntajeT": 50,
+        "elevacion": "normal",
+        "interpretacion": "Puntaje normal (T=50): Sin indicadores significativos en ira.",
+        "correlatos": [],
+        "recomendaciones": []
+      },
+      {
+        "codigo": "CYN",
+        "nombre": "Cinismo",
+        "puntajeT": 50,
+        "elevacion": "normal",
+        "interpretacion": "Puntaje normal (T=50): Sin indicadores significativos en cinismo.",
+        "correlatos": [],
+        "recomendaciones": []
+      },
+      {
+        "codigo": "ASP",
+        "nombre": "Conducta Antisocial",
+        "puntajeT": 50,
+        "elevacion": "normal",
+        "interpretacion": "Puntaje normal (T=50): Sin indicadores significativos en conducta antisocial.",
+        "correlatos": [],
+        "recomendaciones": []
+      },
+      {
+        "codigo": "TPA",
+        "nombre": "Tipo A",
+        "puntajeT": 50,
+        "elevacion": "normal",
+        "interpretacion": "Puntaje normal (T=50): Sin indicadores significativos en tipo a.",
+        "correlatos": [],
+        "recomendaciones": []
+      },
+      {
+        "codigo": "LSE",
+        "nombre": "Baja Autoestima",
+        "puntajeT": 50,
+        "elevacion": "normal",
+        "interpretacion": "Puntaje normal (T=50): Sin indicadores significativos en baja autoestima.",
+        "correlatos": [],
+        "recomendaciones": []
+      },
+      {
+        "codigo": "SOD",
+        "nombre": "Malestar Social",
+        "puntajeT": 50,
+        "elevacion": "normal",
+        "interpretacion": "Puntaje normal (T=50): Sin indicadores significativos en malestar social.",
+        "correlatos": [],
+        "recomendaciones": []
+      },
+      {
+        "codigo": "FAM",
+        "nombre": "Problemas Familiares",
+        "puntajeT": 50,
+        "elevacion": "normal",
+        "interpretacion": "Puntaje normal (T=50): Sin indicadores significativos en problemas familiares.",
+        "correlatos": [],
+        "recomendaciones": []
+      },
+      {
+        "codigo": "WRK",
+        "nombre": "Interferencia Laboral",
+        "puntajeT": 50,
+        "elevacion": "normal",
+        "interpretacion": "Puntaje normal (T=50): Sin indicadores significativos en interferencia laboral.",
+        "correlatos": [],
+        "recomendaciones": []
+      },
+      {
+        "codigo": "TRT",
+        "nombre": "Actitud Negativa hacia el Tratamiento",
+        "puntajeT": 50,
+        "elevacion": "normal",
+        "interpretacion": "Puntaje normal (T=50): Sin indicadores significativos en actitud negativa hacia el tratamiento.",
+        "correlatos": [],
+        "recomendaciones": []
+      }
+    ],
+    "interpretacionHarrisLingoes": [],
+    "formulacionClinica": {
+      "validezProtocolo": "El protocolo es VÁLIDO CON RESERVAS. Se detectaron: defensividad elevada. Interpretar con cautela y considerar estas limitaciones.",
+      "perfilPersonalidad": "El perfil presenta un código 80/08 (poco definido). Código de perfil 80/08: Combinación de características de las escalas 8 y 0. Ver análisis individual de cada escala elevada para interpretación detallada. Las escalas más elevadas son Sc, Si, Pt, lo que indica presencia de características relacionadas con Esquizofrenia.",
+      "areasAfectadas": {
+        "cognitivo": "Alteraciones en el proceso de pensamiento: posible pensamiento idiosincrático, dificultad en la atención y concentración. Se observan indicadores de confusión cognitiva y experiencias perceptuales inusuales que requieren evaluación especializada.",
+        "afectivo": "Estado de ánimo significativamente deprimido con sentimientos de desesperanza, culpa y desvalorización. Anhedonia marcada con disminución de la capacidad de experimentar placer. Se requiere evaluación de riesgo suicida.",
+        "conductual": "Conducta hiperactiva con inicio de múltiples proyectos sin completar. Tendencia a la desinhibición conductual y toma de decisiones impulsiva. Posible disminución de la necesidad de sueño.",
+        "interpersonal": "Introversión social marcada con incomodidad significativa en situaciones interpersonales. Red social limitada, dificultad para expresar opiniones y preferencia por actividades solitarias. Posible evitación social clínicamente significativa.",
+        "somatico": "Síntomas somáticos que empeoran en contextos de estrés emocional. Mecanismo de somatización para expresar conflictos psicológicos. Posible conversión de conflictos emocionales en síntomas físicos."
+      },
+      "recursosFortalezas": [
+        "Buena fortaleza del yo y capacidad de afrontamiento"
+      ],
+      "riesgos": [
+        "Evaluar riesgo suicida dada elevación significativa en escala de Depresión",
+        "Riesgo de conductas de desinhibición y toma de decisiones impulsivas",
+        "Posible desorganización psicótica - requiere evaluación psiquiátrica urgente"
+      ],
+      "pronostico": "Pronóstico moderado: Se requiere intervención estructurada con seguimiento cercano. Perfil poco definido reduce la certeza diagnóstica.",
+      "recomendacionesTerapeuticas": [
+        "Considerar las limitaciones de validez del protocolo en la interpretación",
+        "Abordaje psicoterapéutico con enfoque en estado de ánimo depresivo",
+        "Considerar evaluación para tratamiento psicofarmacológico",
+        "Establecer límites claros en el setting terapéutico",
+        "Evaluar conductas de riesgo y problemas legales",
+        "Dedicar tiempo a construir alianza terapéutica sólida",
+        "Evitar confrontaciones directas que puedan activar suspicacia"
+      ]
+    }
+  }
+}

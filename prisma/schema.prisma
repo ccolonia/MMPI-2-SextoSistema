@@ -1,0 +1,360 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// Pregunta del cuestionario MMPI-2
+model PreguntaMMPI2 {
+  id          Int      @id @default(autoincrement())
+  numero      Int      @unique // 1-567
+  texto       String   // Texto de la pregunta
+  orden       Int      @default(0) // Orden de presentación
+  
+  // Respuestas asociadas
+  respuestas  Respuesta[]
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+// Evaluado/Paciente
+model Evaluado {
+  id            String   @id @default(cuid())
+  nombre        String?
+  edad          Int?
+  sexo          String?  // "masculino" | "femenino"
+  nivelEduc     String?  // Nivel de instrucción
+  ocupacion     String?
+  motivoConsulta String?
+  contextoEval  String?  // "clinico" | "forense" | "laboral" | "investigacion"
+  evaluador     String?
+  institucion   String?
+  
+  // Relaciones
+  protocolos    ProtocoloMMPI2[]
+  
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+// Protocolo completo MMPI-2
+model ProtocoloMMPI2 {
+  id              String    @id @default(cuid())
+  evaluadoId      String?
+  evaluado        Evaluado? @relation(fields: [evaluadoId], references: [id])
+  fechaEvaluacion DateTime  @default(now())
+  completado      Boolean   @default(false)
+  
+  // Respuestas
+  respuestas      Respuesta[]
+  
+  // Puntajes calculados
+  puntajesBrutos  PuntajeBruto?
+  puntajesT       PuntajeT?
+  
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+}
+
+// Respuesta individual a una pregunta
+model Respuesta {
+  id            String   @id @default(cuid())
+  protocoloId   String
+  protocolo     ProtocoloMMPI2 @relation(fields: [protocoloId], references: [id])
+  preguntaId    Int
+  pregunta      PreguntaMMPI2 @relation(fields: [preguntaId], references: [id])
+  
+  // Respuesta: true = Verdadero, false = Falso, null = Sin responder
+  verdadero     Boolean?
+  
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  
+  @@unique([protocoloId, preguntaId])
+}
+
+// Puntajes brutos calculados
+model PuntajeBruto {
+  id            String   @id @default(cuid())
+  protocoloId   String   @unique
+  protocolo     ProtocoloMMPI2 @relation(fields: [protocoloId], references: [id])
+  
+  // Omisiones
+  omisiones     Int      @default(0)
+  
+  // Escalas de validez (puntajes brutos)
+  lBruto        Int      @default(0)
+  fBruto        Int      @default(0)
+  kBruto        Int      @default(0)
+  fbBruto       Int      @default(0)
+  fpBruto       Int      @default(0)
+  vrinBruto     Int      @default(0)
+  trinBruto     Int      @default(0)
+  dsBruto       Int      @default(0)
+  dsRBruto      Int      @default(0)
+  sBruto        Int      @default(0)
+  sdBruto       Int      @default(0)
+  soBruto       Int      @default(0)
+  
+  // Escalas clínicas básicas (puntajes brutos)
+  hsBruto       Int      @default(0) // Escala 1 - Hipocondriasis
+  dBruto        Int      @default(0) // Escala 2 - Depresión
+  hyBruto       Int      @default(0) // Escala 3 - Histeria
+  pdBruto       Int      @default(0) // Escala 4 - Desviación Psicopática
+  mfBruto       Int      @default(0) // Escala 5 - Masculinidad-Feminidad
+  paBruto       Int      @default(0) // Escala 6 - Paranoia
+  ptBruto       Int      @default(0) // Escala 7 - Psicastenia
+  scBruto       Int      @default(0) // Escala 8 - Esquizofrenia
+  maBruto       Int      @default(0) // Escala 9 - Hipomanía
+  siBruto       Int      @default(0) // Escala 0 - Introversión Social
+  
+  // Escalas suplementarias (puntajes brutos)
+  aBruto        Int      @default(0)
+  rBruto        Int      @default(0)
+  esBruto       Int      @default(0)
+  macRBruto     Int      @default(0)
+  ohBruto       Int      @default(0)
+  doBruto       Int      @default(0)
+  reBruto       Int      @default(0)
+  mtBruto       Int      @default(0)
+  gmBruto       Int      @default(0)
+  gfBruto       Int      @default(0)
+  pkBruto       Int      @default(0)
+  psBruto       Int      @default(0)
+  mdsBruto      Int      @default(0)
+  apsBruto      Int      @default(0)
+  aasBruto      Int      @default(0)
+  
+  // Escalas de contenido (puntajes brutos)
+  anxBruto      Int      @default(0)
+  frsBruto      Int      @default(0)
+  obsBruto      Int      @default(0)
+  depBruto      Int      @default(0)
+  heaBruto      Int      @default(0)
+  bizBruto      Int      @default(0)
+  angBruto      Int      @default(0)
+  cynBruto      Int      @default(0)
+  aspBruto      Int      @default(0)
+  tpaBruto      Int      @default(0)
+  lseBruto      Int      @default(0)
+  sodBruto      Int      @default(0)
+  famBruto      Int      @default(0)
+  wrkBruto      Int      @default(0)
+  trtBruto      Int      @default(0)
+  
+  // Subescalas Harris-Lingoes (puntajes brutos)
+  d1Bruto       Int      @default(0)
+  d2Bruto       Int      @default(0)
+  d3Bruto       Int      @default(0)
+  d4Bruto       Int      @default(0)
+  d5Bruto       Int      @default(0)
+  hy1Bruto      Int      @default(0)
+  hy2Bruto      Int      @default(0)
+  hy3Bruto      Int      @default(0)
+  hy4Bruto      Int      @default(0)
+  hy5Bruto      Int      @default(0)
+  pd1Bruto      Int      @default(0)
+  pd2Bruto      Int      @default(0)
+  pd3Bruto      Int      @default(0)
+  pd4Bruto      Int      @default(0)
+  pd5Bruto      Int      @default(0)
+  pa1Bruto      Int      @default(0)
+  pa2Bruto      Int      @default(0)
+  pa3Bruto      Int      @default(0)
+  sc1Bruto      Int      @default(0)
+  sc2Bruto      Int      @default(0)
+  sc3Bruto      Int      @default(0)
+  sc4Bruto      Int      @default(0)
+  sc5Bruto      Int      @default(0)
+  sc6Bruto      Int      @default(0)
+  ma1Bruto      Int      @default(0)
+  ma2Bruto      Int      @default(0)
+  ma3Bruto      Int      @default(0)
+  ma4Bruto      Int      @default(0)
+  si1Bruto      Int      @default(0)
+  si2Bruto      Int      @default(0)
+  si3Bruto      Int      @default(0)
+  
+  // Wiener-Harmon (Obvidad/Sutilidad)
+  dOBruto       Int      @default(0)
+  dSBruto       Int      @default(0)
+  hyOBruto      Int      @default(0)
+  hySBruto      Int      @default(0)
+  pdOBruto      Int      @default(0)
+  pdSBruto      Int      @default(0)
+  paOBruto      Int      @default(0)
+  paSBruto      Int      @default(0)
+  maOBruto      Int      @default(0)
+  maSBruto      Int      @default(0)
+  
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+// Puntajes T (convertidos)
+model PuntajeT {
+  id            String   @id @default(cuid())
+  protocoloId   String   @unique
+  protocolo     ProtocoloMMPI2 @relation(fields: [protocoloId], references: [id])
+  
+  // Escalas de validez
+  lT            Int      @default(0)
+  fT            Int      @default(0)
+  kT            Int      @default(0)
+  fbT           Int      @default(0)
+  fpT           Int      @default(0)
+  vrinT         Int      @default(0)
+  trinT         Int      @default(0)
+  
+  // Escalas clínicas básicas
+  hsT           Int      @default(0)
+  dT            Int      @default(0)
+  hyT           Int      @default(0)
+  pdT           Int      @default(0)
+  mfT           Int      @default(0)
+  paT           Int      @default(0)
+  ptT           Int      @default(0)
+  scT           Int      @default(0)
+  maT           Int      @default(0)
+  siT           Int      @default(0)
+  
+  // Escalas suplementarias
+  aT            Int      @default(0)
+  rT            Int      @default(0)
+  esT           Int      @default(0)
+  macRT         Int      @default(0)
+  ohT           Int      @default(0)
+  doT           Int      @default(0)
+  reT           Int      @default(0)
+  mtT           Int      @default(0)
+  gmT           Int      @default(0)
+  gfT           Int      @default(0)
+  pkT           Int      @default(0)
+  psT           Int      @default(0)
+  mdsT          Int      @default(0)
+  apsT          Int      @default(0)
+  aasT          Int      @default(0)
+  
+  // Escalas de contenido
+  anxT          Int      @default(0)
+  frsT          Int      @default(0)
+  obsT          Int      @default(0)
+  depT          Int      @default(0)
+  heaT          Int      @default(0)
+  bizT          Int      @default(0)
+  angT          Int      @default(0)
+  cynT          Int      @default(0)
+  aspT          Int      @default(0)
+  tpaT          Int      @default(0)
+  lseT          Int      @default(0)
+  sodT          Int      @default(0)
+  famT          Int      @default(0)
+  wrkT          Int      @default(0)
+  trtT          Int      @default(0)
+  
+  // Subescalas Harris-Lingoes
+  d1T           Int      @default(0)
+  d2T           Int      @default(0)
+  d3T           Int      @default(0)
+  d4T           Int      @default(0)
+  d5T           Int      @default(0)
+  hy1T          Int      @default(0)
+  hy2T          Int      @default(0)
+  hy3T          Int      @default(0)
+  hy4T          Int      @default(0)
+  hy5T          Int      @default(0)
+  pd1T          Int      @default(0)
+  pd2T          Int      @default(0)
+  pd3T          Int      @default(0)
+  pd4T          Int      @default(0)
+  pd5T          Int      @default(0)
+  pa1T          Int      @default(0)
+  pa2T          Int      @default(0)
+  pa3T          Int      @default(0)
+  sc1T          Int      @default(0)
+  sc2T          Int      @default(0)
+  sc3T          Int      @default(0)
+  sc4T          Int      @default(0)
+  sc5T          Int      @default(0)
+  sc6T          Int      @default(0)
+  ma1T          Int      @default(0)
+  ma2T          Int      @default(0)
+  ma3T          Int      @default(0)
+  ma4T          Int      @default(0)
+  si1T          Int      @default(0)
+  si2T          Int      @default(0)
+  si3T          Int      @default(0)
+  
+  // Wiener-Harmon
+  dOT           Int      @default(0)
+  dST           Int      @default(0)
+  hyOT          Int      @default(0)
+  hyST          Int      @default(0)
+  pdOT          Int      @default(0)
+  pdST          Int      @default(0)
+  paOT          Int      @default(0)
+  paST          Int      @default(0)
+  maOT          Int      @default(0)
+  maST          Int      @default(0)
+  
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+// Informe MMPI-2 guardado
+model InformeMMPI2 {
+  id                String   @id @default(cuid())
+  
+  // Datos del evaluado
+  nombreEvaluado    String?
+  edad              Int?
+  sexo              String?   // "masculino" | "femenino"
+  contextoEvaluacion String?
+  motivoConsulta    String?
+  fechaEvaluacion   String?
+  evaluador         String?
+  institucion       String?
+  
+  // Escalas de validez
+  omisiones         Int      @default(0)
+  vrint             Int      @default(50)
+  trint             Int      @default(50)
+  fBruto            Int      @default(0)
+  fT                Int      @default(50)
+  fbT               Int      @default(50)
+  fpBruto           Int      @default(0)
+  f_K               Int      @default(0)
+  lBruto            Int      @default(0)
+  kBruto            Int      @default(0)
+  
+  // Escalas clínicas (Puntajes T)
+  hsT               Int      @default(50)
+  dT                Int      @default(50)
+  hyT               Int      @default(50)
+  pdT               Int      @default(50)
+  mfT               Int      @default(50)
+  paT               Int      @default(50)
+  ptT               Int      @default(50)
+  scT               Int      @default(50)
+  maT               Int      @default(50)
+  siT               Int      @default(50)
+  
+  // Resultado del análisis (JSON completo)
+  analysisResult    String   // JSON stringificado
+  
+  // PDF generado (base64 o path)
+  pdfPath           String?
+  
+  // Metadatos
+  notas             String?  // Notas adicionales del evaluador
+  
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+}

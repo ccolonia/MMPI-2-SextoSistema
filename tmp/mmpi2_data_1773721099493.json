@@ -1,0 +1,448 @@
+{
+  "demograficos": {
+    "sexo": "masculino",
+    "edad": 30,
+    "contextoEvaluacion": "clinico",
+    "motivoConsulta": "",
+    "fechaEvaluacion": "2026-03-16",
+    "nombreEvaluado": "",
+    "evaluador": "",
+    "institucion": ""
+  },
+  "omisiones": 0,
+  "vrint": 50,
+  "trint": 1,
+  "fT": 55,
+  "fbT": 50,
+  "fpBruto": 3,
+  "f_K": 13,
+  "lBruto": 10,
+  "kBruto": 19,
+  "escalasClinicas": {
+    "Hs": 54,
+    "D": 66,
+    "Hy": 42,
+    "Pd": 35,
+    "Mf": 46,
+    "Pa": 61,
+    "Pt": 47,
+    "Sc": 49,
+    "Ma": 39,
+    "Si": 63
+  },
+  "escalasSuplementarias": {
+    "A": 50,
+    "R": 50,
+    "Es": 50,
+    "MACR": 50,
+    "OH": 50,
+    "PK": 50,
+    "PS": 50,
+    "Do": 50,
+    "Re": 50
+  },
+  "escalasContenido": {
+    "ANX": 50,
+    "FRS": 50,
+    "OBS": 50,
+    "DEP": 50,
+    "HEA": 50,
+    "BIZ": 50,
+    "ANG": 50,
+    "CYN": 50,
+    "ASP": 50,
+    "TPA": 50,
+    "LSE": 50,
+    "SOD": 50,
+    "FAM": 50,
+    "WRK": 50,
+    "TRT": 50
+  },
+  "analysisResult": {
+    "validez": {
+      "omisionesStatus": "confiable",
+      "omisionesMensaje": "0 omisiones: Protocolo confiable para interpretación.",
+      "vrinStatus": "normal",
+      "vrinMensaje": "VRIN T=50: Consistencia adecuada en las respuestas.",
+      "trinStatus": "negador",
+      "trinMensaje": "TRIN T=1: Tendencia negadora. El evaluado tiende a responder \"falso\" indiscriminadamente.",
+      "fStatus": "normal",
+      "fMensaje": "F T=55: Puntuación dentro de límites normales.",
+      "fbStatus": "normal",
+      "fbMensaje": "Fb T=50: Segmento posterior dentro de límites normales.",
+      "fFbConsistencia": "consistente",
+      "fFbMensaje": "Diferencia F-Fb = 5T: Consistencia adecuada entre segmentos del protocolo.",
+      "fpStatus": "normal",
+      "fpMensaje": "F(p) bruto = 3: Sin evidencia de simulación de psicopatología.",
+      "fKStatus": "normal",
+      "fKMensaje": "Índice F-K = 13: Dentro de límites esperados.",
+      "lStatus": "elevado",
+      "lMensaje": "L bruto = 10: Intento de presentar una imagen socialmente deseable. Defensividad elevada.",
+      "kStatus": "elevado",
+      "kMensaje": "K bruto = 19: Defensividad elevada. Tendencia a minimizar dificultades.",
+      "conclusionGeneral": "valido_reservas",
+      "justificacionValidez": "El protocolo es VÁLIDO CON RESERVAS. Se detectaron: defensividad elevada. Interpretar con cautela y considerar estas limitaciones."
+    },
+    "escalasClinicasInterpretadas": [
+      {
+        "codigo": "Hs",
+        "nombre": "Hipocondriasis",
+        "puntajeT": 54,
+        "elevacion": "normal",
+        "interpretacion": "PUNTAJE NORMAL (T=54): Dentro del rango esperado para la población general.",
+        "correlatos": [],
+        "recomendaciones": []
+      },
+      {
+        "codigo": "D",
+        "nombre": "Depresión",
+        "puntajeT": 66,
+        "elevacion": "elevada",
+        "interpretacion": "ELEVACIÓN MODERADA (T=66): Depresión clínica, baja autoestima, pesimismo marcado, anhedonia. Sentimientos de desesperanza, culpa excesiva y desvalorización personal. Se observan rasgos y síntomas en grado clínicamente significativo que merecen atención.",
+        "correlatos": [
+          "Estado de ánimo deprimido persistente",
+          "Pérdida de interés en actividades placenteras",
+          "Alteraciones del sueño y apetito",
+          "Ideación pesimista y autodesvalorización",
+          "Riesgo de ideación suicida",
+          "Historia de pérdidas significativas"
+        ],
+        "recomendaciones": [
+          "Evaluar riesgo suicida de manera directa",
+          "Considerar derivación para evaluación psicofarmacológica",
+          "Abordaje cognitivo-conductual para depresión"
+        ]
+      },
+      {
+        "codigo": "Hy",
+        "nombre": "Histeria",
+        "puntajeT": 42,
+        "elevacion": "normal",
+        "interpretacion": "PUNTAJE NORMAL (T=42): Dentro del rango esperado para la población general.",
+        "correlatos": [],
+        "recomendaciones": []
+      },
+      {
+        "codigo": "Pd",
+        "nombre": "Desviación Psicopática",
+        "puntajeT": 35,
+        "elevacion": "normal",
+        "interpretacion": "PUNTAJE BAJO (T=35): Por debajo del promedio. Puede indicar ausencia de las características medidas o tendencia opuesta.",
+        "correlatos": [],
+        "recomendaciones": []
+      },
+      {
+        "codigo": "Mf",
+        "nombre": "Masculinidad-Feminidad",
+        "puntajeT": 46,
+        "elevacion": "normal",
+        "interpretacion": "PUNTAJE NORMAL (T=46): Dentro del rango esperado para la población general.",
+        "correlatos": [],
+        "recomendaciones": []
+      },
+      {
+        "codigo": "Pa",
+        "nombre": "Paranoia",
+        "puntajeT": 61,
+        "elevacion": "normal",
+        "interpretacion": "PUNTAJE LIGERAMENTE ELEVADO (T=61): Presencia de algunos rasgos asociados a esta escala, aunque no alcanzan nivel clínico.",
+        "correlatos": [],
+        "recomendaciones": []
+      },
+      {
+        "codigo": "Pt",
+        "nombre": "Psicastenia",
+        "puntajeT": 47,
+        "elevacion": "normal",
+        "interpretacion": "PUNTAJE NORMAL (T=47): Dentro del rango esperado para la población general.",
+        "correlatos": [],
+        "recomendaciones": []
+      },
+      {
+        "codigo": "Sc",
+        "nombre": "Esquizofrenia",
+        "puntajeT": 49,
+        "elevacion": "normal",
+        "interpretacion": "PUNTAJE NORMAL (T=49): Dentro del rango esperado para la población general.",
+        "correlatos": [],
+        "recomendaciones": []
+      },
+      {
+        "codigo": "Ma",
+        "nombre": "Hipomanía",
+        "puntajeT": 39,
+        "elevacion": "normal",
+        "interpretacion": "PUNTAJE BAJO (T=39): Por debajo del promedio. Puede indicar ausencia de las características medidas o tendencia opuesta.",
+        "correlatos": [],
+        "recomendaciones": []
+      },
+      {
+        "codigo": "Si",
+        "nombre": "Introversión Social",
+        "puntajeT": 63,
+        "elevacion": "normal",
+        "interpretacion": "PUNTAJE LIGERAMENTE ELEVADO (T=63): Presencia de algunos rasgos asociados a esta escala, aunque no alcanzan nivel clínico.",
+        "correlatos": [],
+        "recomendaciones": []
+      }
+    ],
+    "escalasElevadas": [
+      "D"
+    ],
+    "codigoPerfil": {
+      "codigo": "2",
+      "escalasInvolucradas": [
+        "D"
+      ],
+      "definicion": "bien_definido",
+      "interpretacion": "Perfil con elevación principal en escala 2. Ver análisis individual para interpretación detallada.",
+      "correlatosClinicos": [
+        "Ver análisis individual de escalas elevadas"
+      ],
+      "pronostico": "Pronóstico moderado: Se requiere intervención estructurada con seguimiento cercano. Perfil bien definido aumenta la confiabilidad de la interpretación."
+    },
+    "interpretacionSuplementarias": [
+      {
+        "codigo": "A",
+        "nombre": "Ansiedad",
+        "puntajeT": 50,
+        "elevacion": "normal",
+        "interpretacion": "Nivel de ansiedad dentro de límites normales.",
+        "correlatos": [],
+        "recomendaciones": []
+      },
+      {
+        "codigo": "R",
+        "nombre": "Represión",
+        "puntajeT": 50,
+        "elevacion": "normal",
+        "interpretacion": "Puntaje dentro de límites normales (T=50).",
+        "correlatos": [],
+        "recomendaciones": []
+      },
+      {
+        "codigo": "Es",
+        "nombre": "Fortaleza del Yo",
+        "puntajeT": 50,
+        "elevacion": "normal",
+        "interpretacion": "Fortaleza del yo dentro de límites normales.",
+        "correlatos": [],
+        "recomendaciones": []
+      },
+      {
+        "codigo": "MACR",
+        "nombre": "Alcoholismo Revisado (MAC-R)",
+        "puntajeT": 50,
+        "elevacion": "normal",
+        "interpretacion": "Riesgo bajo de problemas de adicciones.",
+        "correlatos": [],
+        "recomendaciones": []
+      },
+      {
+        "codigo": "OH",
+        "nombre": "Hostilidad Sobrecontrolada",
+        "puntajeT": 50,
+        "elevacion": "normal",
+        "interpretacion": "Control de hostilidad adecuado.",
+        "correlatos": [],
+        "recomendaciones": []
+      },
+      {
+        "codigo": "PK",
+        "nombre": "TEPT - Keane",
+        "puntajeT": 50,
+        "elevacion": "normal",
+        "interpretacion": "Sin indicadores significativos de TEPT.",
+        "correlatos": [],
+        "recomendaciones": []
+      },
+      {
+        "codigo": "PS",
+        "nombre": "TEPT - Schlenger",
+        "puntajeT": 50,
+        "elevacion": "normal",
+        "interpretacion": "Puntaje dentro de límites normales (T=50).",
+        "correlatos": [],
+        "recomendaciones": []
+      },
+      {
+        "codigo": "Do",
+        "nombre": "Dominio",
+        "puntajeT": 50,
+        "elevacion": "normal",
+        "interpretacion": "Puntaje dentro de límites normales (T=50).",
+        "correlatos": [],
+        "recomendaciones": []
+      },
+      {
+        "codigo": "Re",
+        "nombre": "Responsabilidad Social",
+        "puntajeT": 50,
+        "elevacion": "normal",
+        "interpretacion": "Puntaje dentro de límites normales (T=50).",
+        "correlatos": [],
+        "recomendaciones": []
+      }
+    ],
+    "interpretacionContenido": [
+      {
+        "codigo": "ANX",
+        "nombre": "Ansiedad",
+        "puntajeT": 50,
+        "elevacion": "normal",
+        "interpretacion": "Puntaje normal (T=50): Sin indicadores significativos en ansiedad.",
+        "correlatos": [],
+        "recomendaciones": []
+      },
+      {
+        "codigo": "FRS",
+        "nombre": "Miedos",
+        "puntajeT": 50,
+        "elevacion": "normal",
+        "interpretacion": "Puntaje normal (T=50): Sin indicadores significativos en miedos.",
+        "correlatos": [],
+        "recomendaciones": []
+      },
+      {
+        "codigo": "OBS",
+        "nombre": "Obsesividad",
+        "puntajeT": 50,
+        "elevacion": "normal",
+        "interpretacion": "Puntaje normal (T=50): Sin indicadores significativos en obsesividad.",
+        "correlatos": [],
+        "recomendaciones": []
+      },
+      {
+        "codigo": "DEP",
+        "nombre": "Depresión",
+        "puntajeT": 50,
+        "elevacion": "normal",
+        "interpretacion": "Puntaje normal (T=50): Sin indicadores significativos en depresión.",
+        "correlatos": [],
+        "recomendaciones": []
+      },
+      {
+        "codigo": "HEA",
+        "nombre": "Preocupaciones de Salud",
+        "puntajeT": 50,
+        "elevacion": "normal",
+        "interpretacion": "Puntaje normal (T=50): Sin indicadores significativos en preocupaciones de salud.",
+        "correlatos": [],
+        "recomendaciones": []
+      },
+      {
+        "codigo": "BIZ",
+        "nombre": "Pensamiento Bizarro",
+        "puntajeT": 50,
+        "elevacion": "normal",
+        "interpretacion": "Puntaje normal (T=50): Sin indicadores significativos en pensamiento bizarro.",
+        "correlatos": [],
+        "recomendaciones": []
+      },
+      {
+        "codigo": "ANG",
+        "nombre": "Ira",
+        "puntajeT": 50,
+        "elevacion": "normal",
+        "interpretacion": "Puntaje normal (T=50): Sin indicadores significativos en ira.",
+        "correlatos": [],
+        "recomendaciones": []
+      },
+      {
+        "codigo": "CYN",
+        "nombre": "Cinismo",
+        "puntajeT": 50,
+        "elevacion": "normal",
+        "interpretacion": "Puntaje normal (T=50): Sin indicadores significativos en cinismo.",
+        "correlatos": [],
+        "recomendaciones": []
+      },
+      {
+        "codigo": "ASP",
+        "nombre": "Conducta Antisocial",
+        "puntajeT": 50,
+        "elevacion": "normal",
+        "interpretacion": "Puntaje normal (T=50): Sin indicadores significativos en conducta antisocial.",
+        "correlatos": [],
+        "recomendaciones": []
+      },
+      {
+        "codigo": "TPA",
+        "nombre": "Tipo A",
+        "puntajeT": 50,
+        "elevacion": "normal",
+        "interpretacion": "Puntaje normal (T=50): Sin indicadores significativos en tipo a.",
+        "correlatos": [],
+        "recomendaciones": []
+      },
+      {
+        "codigo": "LSE",
+        "nombre": "Baja Autoestima",
+        "puntajeT": 50,
+        "elevacion": "normal",
+        "interpretacion": "Puntaje normal (T=50): Sin indicadores significativos en baja autoestima.",
+        "correlatos": [],
+        "recomendaciones": []
+      },
+      {
+        "codigo": "SOD",
+        "nombre": "Malestar Social",
+        "puntajeT": 50,
+        "elevacion": "normal",
+        "interpretacion": "Puntaje normal (T=50): Sin indicadores significativos en malestar social.",
+        "correlatos": [],
+        "recomendaciones": []
+      },
+      {
+        "codigo": "FAM",
+        "nombre": "Problemas Familiares",
+        "puntajeT": 50,
+        "elevacion": "normal",
+        "interpretacion": "Puntaje normal (T=50): Sin indicadores significativos en problemas familiares.",
+        "correlatos": [],
+        "recomendaciones": []
+      },
+      {
+        "codigo": "WRK",
+        "nombre": "Interferencia Laboral",
+        "puntajeT": 50,
+        "elevacion": "normal",
+        "interpretacion": "Puntaje normal (T=50): Sin indicadores significativos en interferencia laboral.",
+        "correlatos": [],
+        "recomendaciones": []
+      },
+      {
+        "codigo": "TRT",
+        "nombre": "Actitud Negativa hacia el Tratamiento",
+        "puntajeT": 50,
+        "elevacion": "normal",
+        "interpretacion": "Puntaje normal (T=50): Sin indicadores significativos en actitud negativa hacia el tratamiento.",
+        "correlatos": [],
+        "recomendaciones": []
+      }
+    ],
+    "interpretacionHarrisLingoes": [],
+    "formulacionClinica": {
+      "validezProtocolo": "El protocolo es VÁLIDO CON RESERVAS. Se detectaron: defensividad elevada. Interpretar con cautela y considerar estas limitaciones.",
+      "perfilPersonalidad": "El perfil presenta un código 2 (bien definido). Perfil con elevación principal en escala 2. Ver análisis individual para interpretación detallada. Las escalas más elevadas son D, lo que indica presencia de características relacionadas con Depresión.",
+      "areasAfectadas": {
+        "cognitivo": "Sin alteraciones cognitivas significativas identificadas. El proceso de pensamiento aparece dentro de parámetros esperados.",
+        "afectivo": "Área afectiva dentro de parámetros normativos. El estado de ánimo aparece estable sin indicadores de alteraciones significativas.",
+        "conductual": "Patrón conductual dentro de parámetros esperados. No se observan indicadores de conducta desadaptativa significativa.",
+        "interpersonal": "Funcionamiento interpersonal dentro de parámetros esperados. Las relaciones sociales aparecen adecuadas sin indicadores de dificultades significativas.",
+        "somatico": "Sin quejas somáticas significativas identificadas. El área de salud física aparece dentro de parámetros esperados."
+      },
+      "recursosFortalezas": [
+        "Buena fortaleza del yo y capacidad de afrontamiento",
+        "Mayoría de escalas clínicas dentro de parámetros normativos"
+      ],
+      "riesgos": [],
+      "pronostico": "Pronóstico moderado: Se requiere intervención estructurada con seguimiento cercano. Perfil bien definido aumenta la confiabilidad de la interpretación.",
+      "recomendacionesTerapeuticas": [
+        "Considerar las limitaciones de validez del protocolo en la interpretación",
+        "Abordaje psicoterapéutico con enfoque en estado de ánimo depresivo",
+        "Considerar evaluación para tratamiento psicofarmacológico"
+      ]
+    }
+  }
+}

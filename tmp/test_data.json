@@ -1,0 +1,44 @@
+{
+  "demograficos": {
+    "nombreEvaluado": "Juan Perez",
+    "edad": 35,
+    "sexo": "masculino",
+    "fechaEvaluacion": "2024-03-16",
+    "contextoEvaluacion": "clinico",
+    "evaluador": "Dr. Garcia",
+    "institucion": "Clinica Psicologica",
+    "motivoConsulta": "Evaluacion de personalidad"
+  },
+  "omisiones": 2,
+  "fT": 55,
+  "lBruto": 3,
+  "kBruto": 15,
+  "escalasClinicas": {
+    "Hs": 62,
+    "D": 70,
+    "Hy": 58,
+    "Pd": 55,
+    "Mf": 45,
+    "Pa": 52,
+    "Pt": 68,
+    "Sc": 60,
+    "Ma": 48,
+    "Si": 65
+  },
+  "analysisResult": {
+    "validez": {
+      "conclusionGeneral": "valido",
+      "justificacionValidez": "El protocolo es valido para interpretacion clinica."
+    },
+    "escalasClinicasInterpretadas": [
+      {"codigo": "D", "nombre": "Depresion", "puntajeT": 70, "interpretacion": "Elevacion significativa indicando sintomas depresivos."},
+      {"codigo": "Pt", "nombre": "Psicastenia", "puntajeT": 68, "interpretacion": "Indicadores de ansiedad y preocupacion."}
+    ],
+    "formulacionClinica": {
+      "perfilPersonalidad": "Perfil con tendencias depresivas y ansiosas.",
+      "recursosFortalezas": ["Capacidad de insight", "Motivacion para el tratamiento"],
+      "riesgos": ["Riesgo de descompensacion emocional"],
+      "recomendacionesTerapeuticas": ["Terapia cognitivo-conductual", "Evaluacion psiquiatrica"]
+    }
+  }
+}
