@@ -27,7 +27,7 @@ Coloque **1** en la columna correspondiente a la respuesta elegida.
 
 ```bash
 # Clonar el repositorio
-git clone https://github.com/TU_USUARIO/mmpi2-sistema.git
+git clone https://github.com/ccolonia/MMPI-2-SextoSistema.git
 cd mmpi2-sistema
 
 # Instalar dependencias
