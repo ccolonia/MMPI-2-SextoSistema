@@ -1,5 +1,5 @@
 # MMPI-2 Sistema de Calificación e Interpretación
-
+#Ver
 Sistema profesional para la calificación e interpretación del Inventario Multifásico de Personalidad de Minnesota-2 (MMPI-2), basado en la Guía de Sanz (2008) - Universidad de Buenos Aires.
 
 ## 🚀 Características
