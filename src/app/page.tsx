@@ -161,18 +161,22 @@ interface AnalysisResult {
   }
 }
 
-// Estado inicial
+// Estado inicial - TODOS los campos en 0, solo se llenan al subir Excel
 const initialProtocol: MMPI2Protocol = {
   demograficos: {
     sexo: 'masculino', edad: 30, contextoEvaluacion: 'clinico',
     motivoConsulta: '', fechaEvaluacion: new Date().toISOString().split('T')[0],
     nombreEvaluado: '', evaluador: '', institucion: ''
   },
-  omisiones: 0, vrint: 50, trint: 50, fBruto: 10, fT: 50,
-  fbT: 50, fpBruto: 3, f_K: 0, lBruto: 3, kBruto: 12,
-  escalasClinicas: { Hs: 50, D: 50, Hy: 50, Pd: 50, Mf: 50, Pa: 50, Pt: 50, Sc: 50, Ma: 50, Si: 50 },
-  escalasSuplementarias: { A: 50, R: 50, Es: 50, MACR: 50, OH: 50, PK: 50, PS: 50, Do: 50, Re: 50 },
-  escalasContenido: { ANX: 50, FRS: 50, OBS: 50, DEP: 50, HEA: 50, BIZ: 50, ANG: 50, CYN: 50, ASP: 50, TPA: 50, LSE: 50, SOD: 50, FAM: 50, WRK: 50, TRT: 50 }
+  // Escalas de validez en 0
+  omisiones: 0, vrint: 0, trint: 0, fBruto: 0, fT: 0,
+  fbT: 0, fpBruto: 0, f_K: 0, lBruto: 0, kBruto: 0,
+  // Escalas clínicas en 0
+  escalasClinicas: { Hs: 0, D: 0, Hy: 0, Pd: 0, Mf: 0, Pa: 0, Pt: 0, Sc: 0, Ma: 0, Si: 0 },
+  // Suplementarias en 0
+  escalasSuplementarias: { A: 0, R: 0, Es: 0, MACR: 0, OH: 0, PK: 0, PS: 0, Do: 0, Re: 0 },
+  // Contenido en 0
+  escalasContenido: { ANX: 0, FRS: 0, OBS: 0, DEP: 0, HEA: 0, BIZ: 0, ANG: 0, CYN: 0, ASP: 0, TPA: 0, LSE: 0, SOD: 0, FAM: 0, WRK: 0, TRT: 0 }
 }
 
 // Constantes
@@ -405,12 +409,8 @@ export default function Home() {
     }
   }, [])
 
-  // Cargar datos del Excel automáticamente al iniciar en modo manual
-  useEffect(() => {
-    if (isLoaded && mode === 'manual' && !dataLoadedFromExcel) {
-      handleLoadFromExcel()
-    }
-  }, [isLoaded, mode, dataLoadedFromExcel, handleLoadFromExcel])
+  // NOTA: La auto-carga de Excel al iniciar fue deshabilitada.
+  // Los datos solo se cargan cuando el usuario sube manualmente el Excel.
 
   // Guardar progreso automáticamente
   const saveProgress = useCallback(() => {
@@ -1376,10 +1376,10 @@ export default function Home() {
                         <CheckCircle className="w-6 h-6 text-green-600" />
                         <div>
                           <h3 className="text-lg font-semibold text-green-800 dark:text-green-200">
-                            ✓ Datos cargados automáticamente desde Excel
+                            ✓ Datos cargados desde Excel
                           </h3>
                           <p className="text-sm text-green-600 dark:text-green-400">
-                            Archivo: MMPI-2_VS_BB_terceros.xls - Las escalas de validez y clínicas han sido cargadas
+                            Las escalas de validez y clínicas han sido cargadas desde el archivo
                           </p>
                         </div>
                       </div>
@@ -1396,7 +1396,7 @@ export default function Home() {
                           {dataLoadedFromExcel ? 'Recargar datos desde Excel' : 'Cargar datos desde archivo Excel'}
                         </h3>
                         <p className="text-sm text-blue-600 dark:text-blue-400">
-                          Lee automáticamente las escalas del archivo MMPI-2_VS_BB_terceros.xls
+                          Sube el archivo Excel del MMPI-2 para cargar las escalas automáticamente
                         </p>
                       </div>
                       <Button
