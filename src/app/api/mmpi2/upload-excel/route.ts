@@ -97,36 +97,36 @@ interface ResultadoMMPI2 {
   paObvio: number; paSutil: number
   maObvio: number; maSutil: number
 
-  // === ESCALAS SUPLEMENTARIAS (brutos) ===
-  aBruto: number
-  rBruto: number
-  esBruto: number
-  macRBruto: number
-  ohBruto: number  // O-H
-  doBruto: number
-  reBruto: number
-  mtBruto: number
+  // === ESCALAS SUPLEMENTARIAS (brutos + T) ===
+  aBruto: number; aT: number
+  rBruto: number; rT: number
+  esBruto: number; esT: number
+  macRBruto: number; macRT: number
+  ohBruto: number; ohT: number  // O-H
+  doBruto: number; doT: number
+  reBruto: number; reT: number
+  mtBruto: number; mtT: number
   gmBruto: number
   gfBruto: number
   pkBruto: number
   psBruto: number
 
-  // === ESCALAS DE CONTENIDO (brutos) ===
-  anxBruto: number
-  frsBruto: number
-  obsBruto: number
-  depContBruto: number
-  heaBruto: number
-  bizBruto: number
-  angBruto: number
-  cynBruto: number
-  aspContBruto: number
-  tpaBruto: number
-  lseBruto: number
-  sodBruto: number
-  famBruto: number
-  wrkBruto: number
-  trtBruto: number
+  // === ESCALAS DE CONTENIDO (brutos + T) ===
+  anxBruto: number; anxT: number
+  frsBruto: number; frsT: number
+  obsBruto: number; obsT: number
+  depContBruto: number; depContT: number
+  heaBruto: number; heaT: number
+  bizBruto: number; bizT: number
+  angBruto: number; angT: number
+  cynBruto: number; cynT: number
+  aspContBruto: number; aspContT: number
+  tpaBruto: number; tpaT: number
+  lseBruto: number; lseT: number
+  sodBruto: number; sodT: number
+  famBruto: number; famT: number
+  wrkBruto: number; wrkT: number
+  trtBruto: number; trtT: number
 
   cargado: boolean
 }
@@ -174,14 +174,12 @@ function parseExcel(buffer: Buffer): ResultadoMMPI2 {
   const fBruto = safeNum(getCell(brutos, 1, 4), 0)
   const kBruto = safeNum(getCell(brutos, 1, 5), 0)
   const omisiones = safeNum(getCell(brutos, 1, 8), 0)
-  const fK = fBruto - kBruto
+  // F-K se calcula correctamente abajo (el Excel lo tiene invertido)
 
   // T de validez desde Puntajes T R2 (cols 0, 1, 2)
   const lT = puntajesT.length > 2 ? safeNum(getCell(puntajesT, 2, 0), 50) : 50
   const fT = puntajesT.length > 2 ? safeNum(getCell(puntajesT, 2, 1), 50) : 50
   const kT = puntajesT.length > 2 ? safeNum(getCell(puntajesT, 2, 2), 50) : 50
-  // F-K desde Puntajes T R1 col 6
-  const fK_fromExcel = puntajesT.length > 1 ? safeNum(getCell(puntajesT, 1, 6), fK) : fK
 
   // === ESCALAS CLÍNICAS BÁSICAS ===
   // Brutos desde Puntajes Brutos R4 (cols 3-13)
@@ -318,12 +316,15 @@ function parseExcel(buffer: Buffer): ResultadoMMPI2 {
   const vrinBruto = safeNum(getCell(brutos, 31, 10), 0)
   const trinBruto = safeNum(getCell(brutos, 31, 11), 0)
 
-  // T aproximados para validez adicional (Fb, Fp, VRIN, TRIN)
-  // Estos no están en Puntajes T, calculamos con fórmula simple
-  const fbT = fbBruto ? Math.min(120, 42 + fbBruto * 3) : 50
-  const fpT = fpBruto ? Math.min(120, 41 + fpBruto * 7) : 50
-  const vrinT = vrinBruto ? Math.min(120, 30 + vrinBruto * 4) : 50
-  const trinT = trinBruto ? Math.min(120, 50 + trinBruto * 3) : 50
+  // === T REALES de validez adicional desde Puntajes T R39 ===
+  // R37: headers: GM, GF, PK, PS, _, _, F(p), Fb, VRIN, TRIN
+  // R38: brutos
+  // R39: T values
+  // Cols: 0=GM, 1=GF, 2=PK, 3=PS, 6=F(p), 7=Fb, 8=VRIN, 9=TRIN
+  const fpT = puntajesT.length > 39 ? safeNum(getCell(puntajesT, 39, 6), 50) : 50
+  const fbT = puntajesT.length > 39 ? safeNum(getCell(puntajesT, 39, 7), 50) : 50
+  const vrinT = puntajesT.length > 39 ? safeNum(getCell(puntajesT, 39, 8), 50) : 50
+  const trinT = puntajesT.length > 39 ? safeNum(getCell(puntajesT, 39, 9), 50) : 50
 
   // === ESCALAS DE CONTENIDO (brutos desde Puntajes Brutos R35/R37) ===
   const anxBruto = safeNum(getCell(brutos, 35, 3), 0)
@@ -343,10 +344,52 @@ function parseExcel(buffer: Buffer): ResultadoMMPI2 {
   const wrkBruto = safeNum(getCell(brutos, 37, 8), 0)
   const trtBruto = safeNum(getCell(brutos, 37, 9), 0)
 
+  // === T REALES de escalas de contenido desde Puntajes T R44 y R48 ===
+  // R42: ANX, FRS, OBS, DEP, HEA, BIZ, ANG, CYN (cols 0-7)
+  // R43: brutos
+  // R44: T values (cols 0-7)
+  const anxT = puntajesT.length > 44 ? safeNum(getCell(puntajesT, 44, 0), 50) : 50
+  const frsT = puntajesT.length > 44 ? safeNum(getCell(puntajesT, 44, 1), 50) : 50
+  const obsT = puntajesT.length > 44 ? safeNum(getCell(puntajesT, 44, 2), 50) : 50
+  const depContT = puntajesT.length > 44 ? safeNum(getCell(puntajesT, 44, 3), 50) : 50
+  const heaT = puntajesT.length > 44 ? safeNum(getCell(puntajesT, 44, 4), 50) : 50
+  const bizT = puntajesT.length > 44 ? safeNum(getCell(puntajesT, 44, 5), 50) : 50
+  const angT = puntajesT.length > 44 ? safeNum(getCell(puntajesT, 44, 6), 50) : 50
+  const cynT = puntajesT.length > 44 ? safeNum(getCell(puntajesT, 44, 7), 50) : 50
+
+  // R46: ASP, TPA, LSE, SOD, FAM, WRK, TRT (cols 0-6)
+  // R47: brutos
+  // R48: T values (cols 0-6)
+  const aspContT = puntajesT.length > 48 ? safeNum(getCell(puntajesT, 48, 0), 50) : 50
+  const tpaT = puntajesT.length > 48 ? safeNum(getCell(puntajesT, 48, 1), 50) : 50
+  const lseT = puntajesT.length > 48 ? safeNum(getCell(puntajesT, 48, 2), 50) : 50
+  const sodT = puntajesT.length > 48 ? safeNum(getCell(puntajesT, 48, 3), 50) : 50
+  const famT = puntajesT.length > 48 ? safeNum(getCell(puntajesT, 48, 4), 50) : 50
+  const wrkT = puntajesT.length > 48 ? safeNum(getCell(puntajesT, 48, 5), 50) : 50
+  const trtT = puntajesT.length > 48 ? safeNum(getCell(puntajesT, 48, 6), 50) : 50
+
+  // === T REALES de escalas suplementarias desde Puntajes T R60 ===
+  // R59: A, R, Es, MAC-R, O-H, Do, Re, Mt, GM, GF, PK, PS (cols 0-11)
+  // R60: T values
+  const aT = puntajesT.length > 60 ? safeNum(getCell(puntajesT, 60, 0), 50) : 50
+  const rT = puntajesT.length > 60 ? safeNum(getCell(puntajesT, 60, 1), 50) : 50
+  const esT = puntajesT.length > 60 ? safeNum(getCell(puntajesT, 60, 2), 50) : 50
+  const macRT = puntajesT.length > 60 ? safeNum(getCell(puntajesT, 60, 3), 50) : 50
+  const ohT = puntajesT.length > 60 ? safeNum(getCell(puntajesT, 60, 4), 50) : 50
+  const doT = puntajesT.length > 60 ? safeNum(getCell(puntajesT, 60, 5), 50) : 50
+  const reT = puntajesT.length > 60 ? safeNum(getCell(puntajesT, 60, 6), 50) : 50
+  const mtT = puntajesT.length > 60 ? safeNum(getCell(puntajesT, 60, 7), 50) : 50
+
+  // === CORRECCIÓN F-K ===
+  // El Excel reporta F-K = 9 (positivo) pero el cálculo correcto es F-K = fBruto - kBruto
+  // Para Ezequiel: F=7, K=16, entonces F-K = 7-16 = -9 (negativo)
+  // El valor del Excel parece ser K-F, no F-K. Calculamos el correcto.
+  const fK_correcto = fBruto - kBruto
+
   return {
     sexo,
     lBruto, lT, fBruto, fT, kBruto, kT, fbBruto, fbT, fpBruto, fpT, vrinBruto, vrinT, trinBruto, trinT,
-    omisiones, fK: fK_fromExcel,
+    omisiones, fK: fK_correcto,  // Usar cálculo correcto, no el del Excel
     hsBruto, hsT, dBruto, dT, hyBruto, hyT, pdBruto, pdT,
     mfMBruto, mfMT, mfFBruto, mfFT,
     paBruto, paT, ptBruto, ptT, scBruto, scT, maBruto, maT, siBruto, siT,
@@ -358,10 +401,14 @@ function parseExcel(buffer: Buffer): ResultadoMMPI2 {
     ma1Bruto, ma1T, ma2Bruto, ma2T, ma3Bruto, ma3T, ma4Bruto, ma4T,
     si1Bruto, si1T, si2Bruto, si2T, si3Bruto, si3T,
     dObvio, dSutil, hyObvio, hySutil, pdObvio, pdSutil, paObvio, paSutil, maObvio, maSutil,
-    aBruto, rBruto, esBruto, macRBruto, ohBruto, doBruto, reBruto, mtBruto,
+    // Suplementarias con T reales
+    aBruto, aT, rBruto, rT, esBruto, esT, macRBruto, macRT, ohBruto, ohT, doBruto, doT, reBruto, reT, mtBruto, mtT,
     gmBruto, gfBruto, pkBruto, psBruto,
-    anxBruto, frsBruto, obsBruto, depContBruto, heaBruto, bizBruto, angBruto, cynBruto,
-    aspContBruto, tpaBruto, lseBruto, sodBruto, famBruto, wrkBruto, trtBruto,
+    // Contenido con T reales
+    anxBruto, anxT, frsBruto, frsT, obsBruto, obsT, depContBruto, depContT,
+    heaBruto, heaT, bizBruto, bizT, angBruto, angT, cynBruto, cynT,
+    aspContBruto, aspContT, tpaBruto, tpaT, lseBruto, lseT, sodBruto, sodT,
+    famBruto, famT, wrkBruto, wrkT, trtBruto, trtT,
     cargado: true,
   }
 }

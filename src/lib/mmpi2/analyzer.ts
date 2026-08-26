@@ -661,6 +661,52 @@ export function generarFormulacionClinica(
   // Validez del protocolo
   const validezProtocolo = validez.justificacionValidez;
 
+  // === ESTILO DEFENSIVO ===
+  // Detectar patrón defensivo: L elevada + ratios O/S bajos + F-K negativo
+  let estiloDefensivo = '';
+  const lT = protocol.lBruto;
+  const kT = protocol.kBruto;
+  const fK = protocol.f_K;
+  const razonesOS = protocol.obviedadSutilidad;
+
+  // Contar cuántas razones O/S son defensivas (ratio < 0.45)
+  let razonesDefensivas = 0;
+  let totalRazones = 0;
+  if (razonesOS) {
+    for (const escala of ['D', 'Hy', 'Pd', 'Pa', 'Ma'] as const) {
+      const r = razonesOS[escala];
+      if (r) {
+        totalRazones++;
+        const total = r.obvio + r.sutil;
+        const ratio = total > 0 ? r.obvio / total : 0.5;
+        if (ratio < 0.45) razonesDefensivas++;
+      }
+    }
+  }
+
+  // L bruto > 7 (T >= 65) + F-K negativo + mayoría de ratios O/S bajos
+  const lElevada = lT >= 7;  // L bruto >= 7 → T >= 65
+  const fKNegativo = fK < 0;
+  const mayoriaRazonesDefensivas = totalRazones > 0 && razonesDefensivas >= Math.ceil(totalRazones * 0.6);
+
+  if (lElevada && fKNegativo && mayoriaRazonesDefensivas) {
+    estiloDefensivo = `ESTILO DEFENSIVO DOCUMENTADO: El evaluado presenta un patrón defensivo sistemático y consistente, evidenciado por múltiples indicadores convergentes:
+
+1. Escala L elevada (L bruto=${lT}, T≈65): Tendencia a presentarse de manera excesivamente virtuosa y moralmente intachable, negando pequeños fallos humanos que prácticamente todo el mundo reconoce. El evaluado se muestra bajo una luz muy favorable, con una autoimagen rígidamente positiva.
+
+2. Índice F-K = ${fK} (negativo): Valor claramente negativo que indica AUSENCIA de simulación de trastorno psicopatológico. Descarta exageración sintomática y confirma orientación defensiva.
+
+3. Razones Obviedad/Sutilidad: ${razonesDefensivas} de ${totalRazones} escalas presentan ratios O/S bajos (< 0.45), confirmando que el evaluado niega síntomas cuando estos son claramente reconocibles (ítems obvios) pero responde con más libertad ante ítems cuya implicación clínica no resulta evidente (sutiles).
+
+4. K bruto=${kT}: ${kT >= 15 ? 'Elevada, refuerza el patrón defensivo' : 'En rango promedio, no añade defensividad adicional'}.
+
+CONCLUSIÓN: El protocolo es aceptable para interpretación, pero los puntajes clínicos probablemente SUBESTIMAN la psicopatología real del evaluado. Las conclusiones clínicas deben leerse como PISOS, no como techos. En contexto forense con terceros en juego, este patrón defensivo cobra especial relevancia interpretativa y debe ser explicitado en el informe profesional.`;
+  } else if (lElevada || fKNegativo || mayoriaRazonesDefensivas) {
+    estiloDefensivo = `Patrón defensivo parcial: Se detectan algunos indicadores de defensividad (L=${lT}, F-K=${fK}, razones O/S defensivas=${razonesDefensivas}/${totalRazones}), aunque no configuran un patrón sistemático. Interpretar los resultados con cautela.`;
+  } else {
+    estiloDefensivo = 'No se detecta patrón defensivo significativo. Las escalas de validez (L, K, F-K) y razones Obviedad/Sutilidad se encuentran dentro de parámetros normativos.';
+  }
+
   // Perfil de personalidad
   let perfilPersonalidad = '';
   const elevadas = escalasClinicas.filter(e => e.elevacion !== 'normal');
@@ -685,8 +731,14 @@ export function generarFormulacionClinica(
   // Recursos y fortalezas
   const recursosFortalezas: string[] = [];
   const esElevado = suplementarias.find(s => s.codigo === 'Es');
-  if (esElevado && esElevado.puntajeT >= 50) {
-    recursosFortalezas.push('Buena fortaleza del yo y capacidad de afrontamiento');
+  if (esElevado) {
+    if (esElevado.puntajeT >= 55) {
+      recursosFortalezas.push('Buena fortaleza del yo y capacidad de afrontamiento');
+    } else if (esElevado.puntajeT <= 40) {
+      recursosFortalezas.push('Fortaleza del yo reducida, vulnerabilidad al estrés (Es T=' + esElevado.puntajeT + ')');
+    } else {
+      recursosFortalezas.push('Fortaleza del yo dentro de límites normativos (Es T=' + esElevado.puntajeT + ')');
+    }
   }
   
   const kNormal = protocol.kBruto >= 9 && protocol.kBruto <= 15;
@@ -769,6 +821,7 @@ export function generarFormulacionClinica(
   return {
     validezProtocolo,
     perfilPersonalidad,
+    estiloDefensivo,
     areasAfectadas,
     recursosFortalezas,
     riesgos,

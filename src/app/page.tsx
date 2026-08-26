@@ -151,6 +151,7 @@ interface AnalysisResult {
   } | null
   formulacionClinica: {
     validezProtocolo: string; perfilPersonalidad: string
+    estiloDefensivo: string
     areasAfectadas: {
       cognitivo: string; afectivo: string; conductual: string
       interpersonal: string; somatico: string
@@ -297,38 +298,38 @@ export default function Home() {
           nuevasEscalas.Mf = data.mfMT ?? prev.escalasClinicas.Mf
         }
 
-        // Escalas suplementarias (T aproximado desde brutos - no hay tablas T completas)
+        // Escalas suplementarias (T REALES del Excel)
         const nuevasSuplementarias = { ...prev.escalasSuplementarias }
         if (data.aBruto !== undefined) {
-          nuevasSuplementarias.A = data.aBruto ? Math.min(120, 30 + data.aBruto * 2) : 50
-          nuevasSuplementarias.R = data.rBruto ? Math.min(120, 30 + data.rBruto * 2) : 50
-          nuevasSuplementarias.Es = data.esBruto ? Math.min(120, 30 + data.esBruto * 2) : 50
-          nuevasSuplementarias.MACR = data.macRBruto ? Math.min(120, 30 + data.macRBruto * 2) : 50
-          nuevasSuplementarias.OH = data.ohBruto ? Math.min(120, 30 + data.ohBruto * 2) : 50
-          nuevasSuplementarias.Do = data.doBruto ? Math.min(120, 30 + data.doBruto * 2) : 50
-          nuevasSuplementarias.Re = data.reBruto ? Math.min(120, 30 + data.reBruto * 2) : 50
-          nuevasSuplementarias.PK = data.pkBruto ? Math.min(120, 30 + data.pkBruto * 2) : 50
-          nuevasSuplementarias.PS = data.psBruto ? Math.min(120, 30 + data.psBruto * 2) : 50
+          nuevasSuplementarias.A = data.aT ?? 50
+          nuevasSuplementarias.R = data.rT ?? 50
+          nuevasSuplementarias.Es = data.esT ?? 50
+          nuevasSuplementarias.MACR = data.macRT ?? 50
+          nuevasSuplementarias.OH = data.ohT ?? 50
+          nuevasSuplementarias.Do = data.doT ?? 50
+          nuevasSuplementarias.Re = data.reT ?? 50
+          nuevasSuplementarias.PK = 50  // No hay T en el Excel para PK
+          nuevasSuplementarias.PS = 50  // No hay T en el Excel para PS
         }
 
-        // Escalas de contenido (T aproximado desde brutos)
+        // Escalas de contenido (T REALES del Excel)
         const nuevasContenido = { ...prev.escalasContenido }
         if (data.anxBruto !== undefined) {
-          nuevasContenido.ANX = data.anxBruto ? Math.min(120, 30 + data.anxBruto * 3) : 50
-          nuevasContenido.FRS = data.frsBruto ? Math.min(120, 30 + data.frsBruto * 3) : 50
-          nuevasContenido.OBS = data.obsBruto ? Math.min(120, 30 + data.obsBruto * 3) : 50
-          nuevasContenido.DEP = data.depContBruto ? Math.min(120, 30 + data.depContBruto * 3) : 50
-          nuevasContenido.HEA = data.heaBruto ? Math.min(120, 30 + data.heaBruto * 3) : 50
-          nuevasContenido.BIZ = data.bizBruto ? Math.min(120, 30 + data.bizBruto * 3) : 50
-          nuevasContenido.ANG = data.angBruto ? Math.min(120, 30 + data.angBruto * 3) : 50
-          nuevasContenido.CYN = data.cynBruto ? Math.min(120, 30 + data.cynBruto * 3) : 50
-          nuevasContenido.ASP = data.aspContBruto ? Math.min(120, 30 + data.aspContBruto * 3) : 50
-          nuevasContenido.TPA = data.tpaBruto ? Math.min(120, 30 + data.tpaBruto * 3) : 50
-          nuevasContenido.LSE = data.lseBruto ? Math.min(120, 30 + data.lseBruto * 3) : 50
-          nuevasContenido.SOD = data.sodBruto ? Math.min(120, 30 + data.sodBruto * 3) : 50
-          nuevasContenido.FAM = data.famBruto ? Math.min(120, 30 + data.famBruto * 3) : 50
-          nuevasContenido.WRK = data.wrkBruto ? Math.min(120, 30 + data.wrkBruto * 3) : 50
-          nuevasContenido.TRT = data.trtBruto ? Math.min(120, 30 + data.trtBruto * 3) : 50
+          nuevasContenido.ANX = data.anxT ?? 50
+          nuevasContenido.FRS = data.frsT ?? 50
+          nuevasContenido.OBS = data.obsT ?? 50
+          nuevasContenido.DEP = data.depContT ?? 50
+          nuevasContenido.HEA = data.heaT ?? 50
+          nuevasContenido.BIZ = data.bizT ?? 50
+          nuevasContenido.ANG = data.angT ?? 50
+          nuevasContenido.CYN = data.cynT ?? 50
+          nuevasContenido.ASP = data.aspContT ?? 50
+          nuevasContenido.TPA = data.tpaT ?? 50
+          nuevasContenido.LSE = data.lseT ?? 50
+          nuevasContenido.SOD = data.sodT ?? 50
+          nuevasContenido.FAM = data.famT ?? 50
+          nuevasContenido.WRK = data.wrkT ?? 50
+          nuevasContenido.TRT = data.trtT ?? 50
         }
 
         // Harris-Lingoes (brutos)
@@ -2007,6 +2008,12 @@ export default function Home() {
                       <h4 className="font-semibold text-lg mb-2">Validez del Protocolo</h4>
                       <p className="text-slate-700">{analysisResult.formulacionClinica.validezProtocolo}</p>
                     </div>
+                    {analysisResult.formulacionClinica.estiloDefensivo && (
+                      <div className="p-4 rounded-lg border-l-4 border-purple-500 bg-purple-50 dark:bg-purple-900/20">
+                        <h4 className="font-semibold text-lg mb-2 text-purple-700 dark:text-purple-300">⚠️ Estilo Defensivo</h4>
+                        <p className="text-slate-700 whitespace-pre-line">{analysisResult.formulacionClinica.estiloDefensivo}</p>
+                      </div>
+                    )}
                     <div>
                       <h4 className="font-semibold text-lg mb-2">Perfil de Personalidad</h4>
                       <p className="text-slate-700">{analysisResult.formulacionClinica.perfilPersonalidad}</p>
