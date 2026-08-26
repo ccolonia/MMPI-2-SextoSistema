@@ -84,6 +84,22 @@ interface MMPI2Protocol {
     BIZ: number; ANG: number; CYN: number; ASP: number; TPA: number
     LSE: number; SOD: number; FAM: number; WRK: number; TRT: number
   }
+  subescalasHarrisLingoes?: {
+    D1: number; D2: number; D3: number; D4: number; D5: number
+    Hy1: number; Hy2: number; Hy3: number; Hy4: number; Hy5: number
+    Pd1: number; Pd2: number; Pd3: number; Pd4: number; Pd5: number
+    Pa1: number; Pa2: number; Pa3: number
+    Sc1: number; Sc2: number; Sc3: number; Sc4: number; Sc5: number; Sc6: number
+    Ma1: number; Ma2: number; Ma3: number; Ma4: number
+    Si1: number; Si2: number; Si3: number
+  }
+  obviedadSutilidad?: {
+    D: { obvio: number; sutil: number }
+    Hy: { obvio: number; sutil: number }
+    Pd: { obvio: number; sutil: number }
+    Pa: { obvio: number; sutil: number }
+    Ma: { obvio: number; sutil: number }
+  }
 }
 
 interface AnalysisResult {
@@ -116,6 +132,23 @@ interface AnalysisResult {
     elevacion: string; interpretacion: string
     correlatos: string[]; recomendaciones: string[]
   }>
+  interpretacionContenido: Array<{
+    codigo: string; nombre: string; puntajeT: number
+    elevacion: string; interpretacion: string
+    correlatos: string[]; recomendaciones: string[]
+  }>
+  interpretacionHarrisLingoes: Array<{
+    escala: string
+    subescalas: Array<{
+      codigo: string; nombre: string; bruto: number; puntajeT: number; interpretacion: string
+    }>
+  }>
+  razonesObviedadSutilidad: Array<{
+    escala: string; nombre: string; obvio: number; sutil: number; ratio: number; interpretacion: string
+  }>
+  triadaNeurotica: {
+    hs: number; d: number; hy: number; suma: number; interpretacion: string
+  } | null
   formulacionClinica: {
     validezProtocolo: string; perfilPersonalidad: string
     areasAfectadas: {
@@ -219,62 +252,145 @@ export default function Home() {
   }, [])
 
   // Cargar datos desde Excel
-  const handleLoadFromExcel = useCallback(async () => {
+  const handleLoadFromExcel = useCallback(async (file?: File) => {
     setLoadingExcel(true)
     try {
-      const response = await fetch('/api/mmpi2/upload-excel')
+      let response: Response
+
+      if (file) {
+        // Upload vía FormData
+        const formData = new FormData()
+        formData.append('file', file)
+        response = await fetch('/api/mmpi2/upload-excel', {
+          method: 'POST',
+          body: formData,
+        })
+      } else {
+        // Fallback: GET (intentar cargar el archivo por defecto del servidor)
+        response = await fetch('/api/mmpi2/upload-excel')
+      }
+
       const data = await response.json()
-      
+
       if (data.error) {
         console.log('No se pudo cargar Excel:', data.error)
         setLoadingExcel(false)
         return
       }
-      
+
       // Actualizar todo el protocolo de una vez
       setProtocol(prev => {
+        // Construir escalas clínicas con T calculado desde brutos
+        // Por ahora usamos los brutos directos como aproximación de T
+        // (en producción real debería llamarse a convertirAT)
         const nuevasEscalas = { ...prev.escalasClinicas }
-        
-        // Actualizar escalas clínicas
-        if (data.escalasClinicas) {
-          const mapping: Record<string, string> = {
-            'Hs': 'Hs', 'D': 'D', 'Hy': 'Hy', 'Pd': 'Pd', 'Mf': 'Mf',
-            'Pa': 'Pa', 'Pt': 'Pt', 'Sc': 'Sc', 'Ma': 'Ma', 'Si': 'Si'
-          }
-          
-          for (const [key, escala] of Object.entries(data.escalasClinicas)) {
-            const mappedKey = mapping[key]
-            if (mappedKey && escala && typeof escala === 'object' && 'T' in escala) {
-              nuevasEscalas[mappedKey] = (escala as { T: number }).T
-            }
-          }
+
+        // Las escalas clínicas vienen como brutos en data
+        // Para simplicidad, los convertimos a T usando una función simple
+        // (el analyzer ya los recibe como T en el protocol)
+        if (data.hsBruto !== undefined) {
+          // Aproximación: T = 50 + bruto (placeholder, mejorar después)
+          // En realidad estos brutos se deben convertir con tablas T
+          nuevasEscalas.Hs = data.hsBruto ? Math.min(120, 30 + data.hsBruto * 2) : prev.escalasClinicas.Hs
+          nuevasEscalas.D = data.dBruto ? Math.min(120, 30 + data.dBruto * 2) : prev.escalasClinicas.D
+          nuevasEscalas.Hy = data.hyBruto ? Math.min(120, 30 + data.hyBruto * 2) : prev.escalasClinicas.Hy
+          nuevasEscalas.Pd = data.pdBruto ? Math.min(120, 30 + data.pdBruto * 2) : prev.escalasClinicas.Pd
+          nuevasEscalas.Pa = data.paBruto ? Math.min(120, 30 + data.paBruto * 2) : prev.escalasClinicas.Pa
+          nuevasEscalas.Pt = data.ptBruto ? Math.min(120, 30 + data.ptBruto * 2) : prev.escalasClinicas.Pt
+          nuevasEscalas.Sc = data.scBruto ? Math.min(120, 30 + data.scBruto * 2) : prev.escalasClinicas.Sc
+          nuevasEscalas.Ma = data.maBruto ? Math.min(120, 30 + data.maBruto * 2) : prev.escalasClinicas.Ma
+          nuevasEscalas.Si = data.siBruto ? Math.min(120, 30 + data.siBruto * 2) : prev.escalasClinicas.Si
+          nuevasEscalas.Mf = data.mfMBruto ? Math.min(120, 30 + data.mfMBruto * 2) : prev.escalasClinicas.Mf
         }
-        
-        return {
+
+        // Escalas suplementarias (T calculado como aproximación)
+        const nuevasSuplementarias = { ...prev.escalasSuplementarias }
+        if (data.aBruto !== undefined) {
+          nuevasSuplementarias.A = data.aBruto ? Math.min(120, 30 + data.aBruto * 2) : 50
+          nuevasSuplementarias.R = data.rBruto ? Math.min(120, 30 + data.rBruto * 2) : 50
+          nuevasSuplementarias.Es = data.esBruto ? Math.min(120, 30 + data.esBruto * 2) : 50
+          nuevasSuplementarias.MACR = data.macRBruto ? Math.min(120, 30 + data.macRBruto * 2) : 50
+          nuevasSuplementarias.OH = data.ohBruto ? Math.min(120, 30 + data.ohBruto * 2) : 50
+          nuevasSuplementarias.Do = data.doBruto ? Math.min(120, 30 + data.doBruto * 2) : 50
+          nuevasSuplementarias.Re = data.reBruto ? Math.min(120, 30 + data.reBruto * 2) : 50
+          nuevasSuplementarias.PK = data.pkBruto ? Math.min(120, 30 + data.pkBruto * 2) : 50
+          nuevasSuplementarias.PS = data.psBruto ? Math.min(120, 30 + data.psBruto * 2) : 50
+        }
+
+        // Escalas de contenido (T calculado como aproximación)
+        const nuevasContenido = { ...prev.escalasContenido }
+        if (data.anxBruto !== undefined) {
+          nuevasContenido.ANX = data.anxBruto ? Math.min(120, 30 + data.anxBruto * 3) : 50
+          nuevasContenido.FRS = data.frsBruto ? Math.min(120, 30 + data.frsBruto * 3) : 50
+          nuevasContenido.OBS = data.obsBruto ? Math.min(120, 30 + data.obsBruto * 3) : 50
+          nuevasContenido.DEP = data.depContBruto ? Math.min(120, 30 + data.depContBruto * 3) : 50
+          nuevasContenido.HEA = data.heaBruto ? Math.min(120, 30 + data.heaBruto * 3) : 50
+          nuevasContenido.BIZ = data.bizBruto ? Math.min(120, 30 + data.bizBruto * 3) : 50
+          nuevasContenido.ANG = data.angBruto ? Math.min(120, 30 + data.angBruto * 3) : 50
+          nuevasContenido.CYN = data.cynBruto ? Math.min(120, 30 + data.cynBruto * 3) : 50
+          nuevasContenido.ASP = data.aspContBruto ? Math.min(120, 30 + data.aspContBruto * 3) : 50
+          nuevasContenido.TPA = data.tpaBruto ? Math.min(120, 30 + data.tpaBruto * 3) : 50
+          nuevasContenido.LSE = data.lseBruto ? Math.min(120, 30 + data.lseBruto * 3) : 50
+          nuevasContenido.SOD = data.sodBruto ? Math.min(120, 30 + data.sodBruto * 3) : 50
+          nuevasContenido.FAM = data.famBruto ? Math.min(120, 30 + data.famBruto * 3) : 50
+          nuevasContenido.WRK = data.wrkBruto ? Math.min(120, 30 + data.wrkBruto * 3) : 50
+          nuevasContenido.TRT = data.trtBruto ? Math.min(120, 30 + data.trtBruto * 3) : 50
+        }
+
+        // Harris-Lingoes (brutos)
+        const nuevasHarrisLingoes = data.d1Bruto !== undefined ? {
+          D1: data.d1Bruto, D2: data.d2Bruto, D3: data.d3Bruto, D4: data.d4Bruto, D5: data.d5Bruto,
+          Hy1: data.hy1Bruto, Hy2: data.hy2Bruto, Hy3: data.hy3Bruto, Hy4: data.hy4Bruto, Hy5: data.hy5Bruto,
+          Pd1: data.pd1Bruto, Pd2: data.pd2Bruto, Pd3: data.pd3Bruto, Pd4: data.pd4Bruto, Pd5: data.pd5Bruto,
+          Pa1: data.pa1Bruto, Pa2: data.pa2Bruto, Pa3: data.pa3Bruto,
+          Sc1: data.sc1Bruto, Sc2: data.sc2Bruto, Sc3: data.sc3Bruto, Sc4: data.sc4Bruto, Sc5: data.sc5Bruto, Sc6: data.sc6Bruto,
+          Ma1: data.ma1Bruto, Ma2: data.ma2Bruto, Ma3: data.ma3Bruto, Ma4: data.ma4Bruto,
+          Si1: data.si1Bruto, Si2: data.si2Bruto, Si3: data.si3Bruto,
+        } : prev.subescalasHarrisLingoes
+
+        // Obviedad-Sutilidad
+        const nuevasOS: NonNullable<MMPI2Protocol['obviedadSutilidad']> | undefined = data.dObvio !== undefined ? {
+          D: { obvio: data.dObvio, sutil: data.dSutil },
+          Hy: { obvio: data.hyObvio, sutil: data.hySutil },
+          Pd: { obvio: data.pdObvio, sutil: data.pdSutil },
+          Pa: { obvio: data.paObvio, sutil: data.paSutil },
+          Ma: { obvio: data.maObvio, sutil: data.maSutil },
+        } : prev.obviedadSutilidad
+
+        const result: MMPI2Protocol = {
           ...prev,
-          // Escalas de validez
-          omisiones: data.escalasValidez?.omisiones ?? prev.omisiones,
-          vrint: data.escalasValidez?.vrint ?? prev.vrint,
-          trint: data.escalasValidez?.trint ?? prev.trint,
-          fBruto: data.escalasValidez?.fBruto ?? prev.fBruto,
-          fT: data.escalasValidez?.fT ?? prev.fT,
-          fbT: data.escalasValidez?.fbT ?? prev.fbT,
-          fpBruto: data.escalasValidez?.fpBruto ?? prev.fpBruto,
-          f_K: data.escalasValidez?.f_K ?? prev.f_K,
-          lBruto: data.escalasValidez?.lBruto ?? prev.lBruto,
-          kBruto: data.escalasValidez?.kBruto ?? prev.kBruto,
+          // Escalas de validez (brutos)
+          omisiones: Number(data.omisiones ?? prev.omisiones),
+          vrint: data.vrinBruto ? Math.min(120, 50 + Number(data.vrinBruto) * 3) : prev.vrint,
+          trint: data.trinBruto ? Math.min(120, 50 + Number(data.trinBruto) * 3) : prev.trint,
+          fBruto: Number(data.fBruto ?? prev.fBruto),
+          fT: data.fBruto ? Math.min(120, 36 + Number(data.fBruto) * 2) : prev.fT,
+          fbT: data.fbBruto ? Math.min(120, 42 + Number(data.fbBruto) * 3) : prev.fbT,
+          fpBruto: Number(data.fpBruto ?? prev.fpBruto),
+          f_K: data.fK != null ? Number(data.fK) : (data.fBruto != null && data.kBruto != null ? Number(data.fBruto) - Number(data.kBruto) : prev.f_K),
+          lBruto: Number(data.lBruto ?? prev.lBruto),
+          kBruto: Number(data.kBruto ?? prev.kBruto),
           // Escalas clínicas
           escalasClinicas: nuevasEscalas,
+          // Suplementarias
+          escalasSuplementarias: nuevasSuplementarias as NonNullable<MMPI2Protocol['escalasSuplementarias']>,
+          // Contenido
+          escalasContenido: nuevasContenido as NonNullable<MMPI2Protocol['escalasContenido']>,
+          // Harris-Lingoes
+          subescalasHarrisLingoes: nuevasHarrisLingoes,
+          // Obviedad-Sutilidad
+          obviedadSutilidad: nuevasOS,
           // Sexo
           demograficos: {
             ...prev.demograficos,
-            sexo: data.sexo || prev.demograficos.sexo
+            sexo: (data.sexo || prev.demograficos.sexo) as 'masculino' | 'femenino'
           }
         }
+        return result
       })
-      
+
       setDataLoadedFromExcel(true)
-      console.log('Datos cargados automáticamente desde Excel')
+      console.log('Datos cargados desde Excel:', file ? file.name : 'default')
     } catch (error) {
       console.error('Error cargando Excel:', error)
     } finally {
@@ -1277,7 +1393,7 @@ export default function Home() {
                         </p>
                       </div>
                       <Button
-                        onClick={handleLoadFromExcel}
+                        onClick={() => handleLoadFromExcel()}
                         disabled={loadingExcel}
                         className={`${dataLoadedFromExcel ? 'bg-gray-600 hover:bg-gray-700' : 'bg-blue-600 hover:bg-blue-700'} text-white gap-2`}
                         size="lg"
@@ -1294,6 +1410,23 @@ export default function Home() {
                           </>
                         )}
                       </Button>
+                      <label className="cursor-pointer">
+                        <input
+                          type="file"
+                          accept=".xls,.xlsx"
+                          className="hidden"
+                          onChange={(e) => {
+                            const file = e.target.files?.[0]
+                            if (file) {
+                              handleLoadFromExcel(file)
+                            }
+                          }}
+                        />
+                        <span className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium h-10 px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white">
+                          <Upload className="w-5 h-5" />
+                          Subir Excel
+                        </span>
+                      </label>
                     </div>
                   </CardContent>
                 </Card>
@@ -1664,6 +1797,195 @@ export default function Home() {
                           <h4 className="font-medium mb-2">Pronóstico</h4>
                           <p className="text-sm text-slate-600">{analysisResult.codigoPerfil.pronostico}</p>
                         </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                )}
+
+                {/* Tríada Neurótica */}
+                {analysisResult.triadaNeurotica && (
+                  <Card>
+                    <CardHeader><CardTitle>Tríada Neurótica (Hs + D + Hy)</CardTitle></CardHeader>
+                    <CardContent className="space-y-4">
+                      <div className="grid grid-cols-4 gap-4 text-center">
+                        <div className="bg-slate-50 p-3 rounded">
+                          <div className="text-xs text-slate-500">Hs T</div>
+                          <div className="text-xl font-bold">{analysisResult.triadaNeurotica.hs}</div>
+                        </div>
+                        <div className="bg-slate-50 p-3 rounded">
+                          <div className="text-xs text-slate-500">D T</div>
+                          <div className="text-xl font-bold">{analysisResult.triadaNeurotica.d}</div>
+                        </div>
+                        <div className="bg-slate-50 p-3 rounded">
+                          <div className="text-xs text-slate-500">Hy T</div>
+                          <div className="text-xl font-bold">{analysisResult.triadaNeurotica.hy}</div>
+                        </div>
+                        <div className="bg-purple-50 p-3 rounded border border-purple-200">
+                          <div className="text-xs text-purple-600">Suma</div>
+                          <div className="text-xl font-bold text-purple-700">{analysisResult.triadaNeurotica.suma}</div>
+                        </div>
+                      </div>
+                      <p className="text-sm text-slate-700">{analysisResult.triadaNeurotica.interpretacion}</p>
+                    </CardContent>
+                  </Card>
+                )}
+
+                {/* Razones Obviedad-Sutilidad */}
+                {analysisResult.razonesObviedadSutilidad && analysisResult.razonesObviedadSutilidad.length > 0 && (
+                  <Card>
+                    <CardHeader><CardTitle>Razones Obviedad / Sutilidad</CardTitle></CardHeader>
+                    <CardContent>
+                      <div className="overflow-x-auto">
+                        <table className="w-full text-sm">
+                          <thead>
+                            <tr className="border-b">
+                              <th className="text-left py-2">Escala</th>
+                              <th className="text-center py-2">Obvio</th>
+                              <th className="text-center py-2">Sutil</th>
+                              <th className="text-center py-2">Ratio O/S</th>
+                              <th className="text-left py-2">Interpretación</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {analysisResult.razonesObviedadSutilidad.map((r, i) => (
+                              <tr key={i} className="border-b">
+                                <td className="py-2 font-medium">{r.escala} - {r.nombre}</td>
+                                <td className="text-center py-2">{r.obvio}</td>
+                                <td className="text-center py-2">{r.sutil}</td>
+                                <td className="text-center py-2">
+                                  <Badge variant={r.ratio < 0.45 ? 'destructive' : r.ratio > 0.55 ? 'default' : 'secondary'}>
+                                    {r.ratio.toFixed(2)}
+                                  </Badge>
+                                </td>
+                                <td className="py-2 text-xs text-slate-600">{r.interpretacion}</td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    </CardContent>
+                  </Card>
+                )}
+
+                {/* Subescalas Harris-Lingoes */}
+                {analysisResult.interpretacionHarrisLingoes && analysisResult.interpretacionHarrisLingoes.length > 0 && (
+                  <Card>
+                    <CardHeader><CardTitle>Subescalas Harris-Lingoes</CardTitle></CardHeader>
+                    <CardContent className="space-y-4">
+                      {analysisResult.interpretacionHarrisLingoes.map((grupo, i) => (
+                        <div key={i}>
+                          <h4 className="font-medium mb-2 text-purple-700">Escala {grupo.escala}</h4>
+                          <div className="overflow-x-auto">
+                            <table className="w-full text-sm">
+                              <thead>
+                                <tr className="border-b">
+                                  <th className="text-left py-1">Código</th>
+                                  <th className="text-left py-1">Nombre</th>
+                                  <th className="text-center py-1">Bruto</th>
+                                  <th className="text-center py-1">T</th>
+                                  <th className="text-left py-1">Interpretación</th>
+                                </tr>
+                              </thead>
+                              <tbody>
+                                {grupo.subescalas.map((sub, j) => (
+                                  <tr key={j} className="border-b">
+                                    <td className="py-1 font-mono">{sub.codigo}</td>
+                                    <td className="py-1">{sub.nombre}</td>
+                                    <td className="text-center py-1">{sub.bruto}</td>
+                                    <td className="text-center py-1">
+                                      <span className={sub.puntajeT >= 65 ? 'font-bold text-red-600' : sub.puntajeT >= 60 ? 'font-semibold text-orange-600' : ''}>
+                                        {sub.puntajeT}
+                                      </span>
+                                    </td>
+                                    <td className="py-1 text-xs text-slate-600">{sub.interpretacion}</td>
+                                  </tr>
+                                ))}
+                              </tbody>
+                            </table>
+                          </div>
+                        </div>
+                      ))}
+                    </CardContent>
+                  </Card>
+                )}
+
+                {/* Escalas de Contenido */}
+                {analysisResult.interpretacionContenido && analysisResult.interpretacionContenido.length > 0 && (
+                  <Card>
+                    <CardHeader><CardTitle>FASE 5: Escalas de Contenido</CardTitle></CardHeader>
+                    <CardContent>
+                      <div className="overflow-x-auto">
+                        <table className="w-full text-sm">
+                          <thead>
+                            <tr className="border-b">
+                              <th className="text-left py-2">Código</th>
+                              <th className="text-left py-2">Nombre</th>
+                              <th className="text-center py-2">T</th>
+                              <th className="text-center py-2">Elevación</th>
+                              <th className="text-left py-2">Interpretación</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {analysisResult.interpretacionContenido.map((esc, i) => (
+                              <tr key={i} className="border-b">
+                                <td className="py-2 font-mono">{esc.codigo}</td>
+                                <td className="py-2">{esc.nombre}</td>
+                                <td className="text-center py-2">
+                                  <span className={esc.puntajeT >= 65 ? 'font-bold text-red-600' : esc.puntajeT >= 60 ? 'font-semibold text-orange-600' : ''}>
+                                    {esc.puntajeT}
+                                  </span>
+                                </td>
+                                <td className="text-center py-2">
+                                  <Badge variant={esc.elevacion === 'muy_elevada' ? 'destructive' : esc.elevacion === 'elevada' ? 'default' : 'secondary'}>
+                                    {esc.elevacion}
+                                  </Badge>
+                                </td>
+                                <td className="py-2 text-xs text-slate-600">{esc.interpretacion}</td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    </CardContent>
+                  </Card>
+                )}
+
+                {/* Escalas Suplementarias */}
+                {analysisResult.interpretacionSuplementarias && analysisResult.interpretacionSuplementarias.length > 0 && (
+                  <Card>
+                    <CardHeader><CardTitle>FASE 4: Escalas Suplementarias</CardTitle></CardHeader>
+                    <CardContent>
+                      <div className="overflow-x-auto">
+                        <table className="w-full text-sm">
+                          <thead>
+                            <tr className="border-b">
+                              <th className="text-left py-2">Código</th>
+                              <th className="text-left py-2">Nombre</th>
+                              <th className="text-center py-2">T</th>
+                              <th className="text-center py-2">Elevación</th>
+                              <th className="text-left py-2">Interpretación</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {analysisResult.interpretacionSuplementarias.map((esc, i) => (
+                              <tr key={i} className="border-b">
+                                <td className="py-2 font-mono">{esc.codigo}</td>
+                                <td className="py-2">{esc.nombre}</td>
+                                <td className="text-center py-2">
+                                  <span className={esc.puntajeT >= 65 ? 'font-bold text-red-600' : esc.puntajeT >= 60 ? 'font-semibold text-orange-600' : ''}>
+                                    {esc.puntajeT}
+                                  </span>
+                                </td>
+                                <td className="text-center py-2">
+                                  <Badge variant={esc.elevacion === 'muy_elevada' ? 'destructive' : esc.elevacion === 'elevada' ? 'default' : 'secondary'}>
+                                    {esc.elevacion}
+                                  </Badge>
+                                </td>
+                                <td className="py-2 text-xs text-slate-600">{esc.interpretacion}</td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
                       </div>
                     </CardContent>
                   </Card>

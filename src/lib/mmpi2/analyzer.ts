@@ -368,13 +368,40 @@ export function determinarCodigoPerfil(escalasInterpretadas: ClinicalScaleInterp
     .filter(e => e.elevacion !== 'normal')
     .sort((a, b) => b.puntajeT - a.puntajeT);
 
+  // === CASO DLN (Dentro de Límites Normales) ===
+  // Según Sanz (2008) página 27: si NINGUNA escala supera T=65, el perfil es DLN
   if (elevadas.length === 0) {
-    return null;
+    // Buscar las 2 escalas más altas aunque no sean "elevadas"
+    const todasOrdenadas = [...escalasInterpretadas].sort((a, b) => b.puntajeT - a.puntajeT);
+    const principales = todasOrdenadas.slice(0, 2);
+
+    const codigoNumerico: Record<string, string> = {
+      'Hs': '1', 'D': '2', 'Hy': '3', 'Pd': '4', 'Mf': '5',
+      'Pa': '6', 'Pt': '7', 'Sc': '8', 'Ma': '9', 'Si': '0'
+    };
+    const numerosPerfil = principales.map(e => codigoNumerico[e.codigo] || e.codigo);
+    const codigoHipotetico = numerosPerfil.length >= 2
+      ? `${numerosPerfil[0]}${numerosPerfil[1]}/${numerosPerfil[1]}${numerosPerfil[0]}`
+      : numerosPerfil[0];
+
+    return {
+      codigo: 'DLN',
+      escalasInvolucradas: principales.map(e => e.codigo),
+      definicion: 'dln',
+      interpretacion: `Perfil Dentro de Límites Normales (DLN). Ninguna escala clínica básica alcanza T=65. Las dos escalas más altas son ${principales[0]?.nombre} (T=${principales[0]?.puntajeT}) y ${principales[1]?.nombre} (T=${principales[1]?.puntajeT}), pero no alcanzan el umbral clínico. Según Sanz (2008), este es el perfil más frecuente en población general y en selección de personal. En contexto clínico o forense, puede indicar: (a) baja motivación para reportar malestar, (b) ajuste egosintónico a problemas crónicos, o (c) ocultamiento de patología seria. Se recomienda matizar con subescalas Harris-Lingoes, escalas de contenido y suplementarias. Código hipotético (no codificable): ${codigoHipotetico}.`,
+      correlatosClinicos: [
+        'Perfil cuantitativamente normal',
+        'Posible defensividad (ver L, K, ratios O/S)',
+        'Interpretar con subescalas Harris-Lingoes y contenido',
+        'No se aplica código de dos escalas (no cumple requisito de elevación mínima T≥65)',
+      ],
+      pronostico: 'Perfil dentro de límites normales. La interpretación clínica debe basarse en patrones cualitativos de subescalas y escalas adicionales más que en el código de perfil.',
+    };
   }
 
   // Obtener las 2-3 escalas más elevadas
   const principales = elevadas.slice(0, 3);
-  
+
   // Convertir códigos a números para el código de perfil
   const codigoNumerico: Record<string, string> = {
     'Hs': '1', 'D': '2', 'Hy': '3', 'Pd': '4', 'Mf': '5',
@@ -382,7 +409,7 @@ export function determinarCodigoPerfil(escalasInterpretadas: ClinicalScaleInterp
   };
 
   const numerosPerfil = principales.map(e => codigoNumerico[e.codigo] || e.codigo);
-  
+
   // Determinar nivel de definición
   let definicion: ProfileCode['definicion'];
   if (principales.length >= 2) {
@@ -398,7 +425,7 @@ export function determinarCodigoPerfil(escalasInterpretadas: ClinicalScaleInterp
     definicion = 'bien_definido';
   }
 
-  const codigo = numerosPerfil.length >= 2 
+  const codigo = numerosPerfil.length >= 2
     ? `${numerosPerfil[0]}${numerosPerfil[1]}/${numerosPerfil[1]}${numerosPerfil[0]}`
     : numerosPerfil[0];
 
@@ -839,6 +866,118 @@ function determinarAreaSomatica(escalas: ClinicalScaleInterpretation[], sup: Cli
   return 'Sin quejas somáticas significativas identificadas. El área de salud física aparece dentro de parámetros esperados.';
 }
 
+// === HARRIS-LINGOES ===
+// Nombres de las subescalas
+const NOMBRES_HARRIS_LINGOES: Record<string, string> = {
+  D1: 'Depresión subjetiva', D2: 'Retardo psicomotor', D3: 'Mal funcionamiento físico',
+  D4: 'Insensibilidad mental', D5: 'Barrera de pensamiento',
+  Hy1: 'Negación de ansiedad social', Hy2: 'Necesidad de afecto', Hy3: 'Labilidad-inseguridad',
+  Hy4: 'Quejas somáticas', Hy5: 'Inhibición de agresión',
+  Pd1: 'Discordia familiar', Pd2: 'Problemas de autoridad', Pd3: 'Respeto social',
+  Pd4: 'Alienación social', Pd5: 'Alienación self',
+  Pa1: 'Ideas persecutorias', Pa2: 'Susceptibilidad poiana', Pa3: 'Ingenuidad',
+  Sc1: 'Alienación social', Sc2: 'Alienación bizarra', Sc3: 'Falta de energía y pobreza ideativa',
+  Sc4: 'Falta de orientación objetivo', Sc5: 'Excesos sensoriales', Sc6: 'Conducta bizarra',
+  Ma1: 'Cinismo', Ma2: 'Actuación psicopática', Ma3: 'Imperturbabilidad', Ma4: 'Inflación del ego',
+  Si1: 'Timidez social', Si2: 'Evitación social', Si3: 'Alienación self',
+};
+
+// Analizar subescalas Harris-Lingoes
+export function analizarHarrisLingoes(protocol: MMPI2Protocol) {
+  if (!protocol.subescalasHarrisLingoes) return [];
+
+  const subs = protocol.subescalasHarrisLingoes;
+  const grupos = [
+    { escala: 'D', subescalas: ['D1', 'D2', 'D3', 'D4', 'D5'] },
+    { escala: 'Hy', subescalas: ['Hy1', 'Hy2', 'Hy3', 'Hy4', 'Hy5'] },
+    { escala: 'Pd', subescalas: ['Pd1', 'Pd2', 'Pd3', 'Pd4', 'Pd5'] },
+    { escala: 'Pa', subescalas: ['Pa1', 'Pa2', 'Pa3'] },
+    { escala: 'Sc', subescalas: ['Sc1', 'Sc2', 'Sc3', 'Sc4', 'Sc5', 'Sc6'] },
+    { escala: 'Ma', subescalas: ['Ma1', 'Ma2', 'Ma3', 'Ma4'] },
+    { escala: 'Si', subescalas: ['Si1', 'Si2', 'Si3'] },
+  ];
+
+  return grupos.map(grupo => ({
+    escala: grupo.escala,
+    subescalas: grupo.subescalas.map(codigo => {
+      const bruto = subs[codigo as keyof typeof subs] ?? 0;
+      // Para Harris-Lingoes no tenemos tablas T completas en este momento
+      // Usar aproximación: T = 50 + bruto * 2 (placeholder)
+      const puntajeT = Math.min(120, Math.max(30, 50 + bruto * 3));
+      const interpretacion = obtenerInterpretacionHarrisLingoes(codigo, puntajeT);
+      return {
+        codigo,
+        nombre: NOMBRES_HARRIS_LINGOES[codigo] || codigo,
+        bruto,
+        puntajeT,
+        interpretacion,
+      };
+    }),
+  }));
+}
+
+function obtenerInterpretacionHarrisLingoes(codigo: string, t: number): string {
+  if (t >= 65) return `Elevación significativa (T=${t}). Indica presencia marcada de las características medidas por ${NOMBRES_HARRIS_LINGOES[codigo] || codigo}.`;
+  if (t >= 60) return `Elevación leve (T=${t}). Indica presencia moderada de ${NOMBRES_HARRIS_LINGOES[codigo] || codigo}.`;
+  if (t >= 40) return `Rango normal (T=${t}).`;
+  return `Puntaje bajo (T=${t}). Puede indicar ausencia o tendencia opuesta a ${NOMBRES_HARRIS_LINGOES[codigo] || codigo}.`;
+}
+
+// === RAZONES OBVIEDAD-SUTILIDAD ===
+export function analizarObviedadSutilidad(protocol: MMPI2Protocol) {
+  if (!protocol.obviedadSutilidad) return [];
+
+  const os = protocol.obviedadSutilidad;
+  const nombres: Record<string, string> = {
+    D: 'Depresión', Hy: 'Histeria', Pd: 'Desviación Psicopática',
+    Pa: 'Paranoia', Ma: 'Hipomanía',
+  };
+
+  return (['D', 'Hy', 'Pd', 'Pa', 'Ma'] as const).map(escala => {
+    const datos = os[escala];
+    if (!datos) return null;
+    const total = datos.obvio + datos.sutil;
+    const ratio = total > 0 ? datos.obvio / total : 0;
+    let interpretacion = '';
+    if (ratio < 0.45) {
+      interpretacion = `Ratio O/S = ${ratio.toFixed(2)}: Patrón defensivo. El evaluado niega síntomas cuando son claramente reconocibles (ítems obvios) pero responde con más libertad ante ítems cuya implicación clínica no resulta evidente (sutiles).`;
+    } else if (ratio > 0.55) {
+      interpretacion = `Ratio O/S = ${ratio.toFixed(2)}: Patrón franco. El evaluado reconoce síntomas de manera directa sin defensividad.`;
+    } else {
+      interpretacion = `Ratio O/S = ${ratio.toFixed(2)}: Patrón normal. Equilibrio entre ítems obvios y sutiles.`;
+    }
+    return {
+      escala,
+      nombre: nombres[escala],
+      obvio: datos.obvio,
+      sutil: datos.sutil,
+      ratio: Math.round(ratio * 100) / 100,
+      interpretacion,
+    };
+  }).filter(Boolean) as { escala: string; nombre: string; obvio: number; sutil: number; ratio: number; interpretacion: string }[];
+}
+
+// === TRÍADA NEURÓTICA ===
+export function calcularTriadaNeurotica(protocol: MMPI2Protocol) {
+  const hs = protocol.escalasClinicas.Hs;
+  const d = protocol.escalasClinicas.D;
+  const hy = protocol.escalasClinicas.Hy;
+  const suma = hs + d + hy;
+
+  let interpretacion = '';
+  if (suma < 150) {
+    interpretacion = `Tríada neurótica (Hs+D+Hy) = ${suma}T. Sin tríada neurótica. Las escalas 1, 2 y 3 se encuentran en rango normal, sin indicadores de neurosis clásica.`;
+  } else if (suma < 180) {
+    interpretacion = `Tríada neurótica (Hs+D+Hy) = ${suma}T. Tríada neurótica leve. Presencia de algunos rasgos neuróticos pero sin configurar un cuadro clínico significativo.`;
+  } else if (suma < 210) {
+    interpretacion = `Tríada neurótica (Hs+D+Hy) = ${suma}T. Tríada neurótica moderada. Combinación de quejas somáticas, estado depresivo y tendencia conversiva que sugiere un cuadro neurótico estructurado.`;
+  } else {
+    interpretacion = `Tríada neurótica (Hs+D+Hy) = ${suma}T. Tríada neurótica marcada. Perfil clásico de neurosis con fuerte componente somático, depresivo e histriónico. Probable deterioro funcional.`;
+  }
+
+  return { hs, d, hy, suma, interpretacion };
+}
+
 // Función principal de análisis
 export function analizarMMPI2(protocol: MMPI2Protocol): MMPI2AnalysisResult {
   // FASE 1: Análisis de validez
@@ -859,6 +998,15 @@ export function analizarMMPI2(protocol: MMPI2Protocol): MMPI2AnalysisResult {
   // FASE 5: Escalas de contenido
   const interpretacionContenido = analizarEscalasContenido(protocol);
 
+  // Harris-Lingoes
+  const interpretacionHarrisLingoes = analizarHarrisLingoes(protocol);
+
+  // Obviedad-Sutilidad
+  const razonesObviedadSutilidad = analizarObviedadSutilidad(protocol);
+
+  // Tríada neurótica
+  const triadaNeurotica = calcularTriadaNeurotica(protocol);
+
   // FASE 6: Formulación clínica
   const formulacionClinica = generarFormulacionClinica(
     validez,
@@ -876,7 +1024,9 @@ export function analizarMMPI2(protocol: MMPI2Protocol): MMPI2AnalysisResult {
     codigoPerfil,
     interpretacionSuplementarias,
     interpretacionContenido,
-    interpretacionHarrisLingoes: [],
+    interpretacionHarrisLingoes,
+    razonesObviedadSutilidad,
+    triadaNeurotica,
     formulacionClinica,
   };
 }

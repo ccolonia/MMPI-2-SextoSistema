@@ -92,6 +92,15 @@ export interface MMPI2Protocol {
     Ma1: number; Ma2: number; Ma3: number; Ma4: number;
     Si1: number; Si2: number; Si3: number;
   };
+
+  // Razones Obviedad-Sutilidad (brutos, opcional)
+  obviedadSutilidad?: {
+    D: { obvio: number; sutil: number };
+    Hy: { obvio: number; sutil: number };
+    Pd: { obvio: number; sutil: number };
+    Pa: { obvio: number; sutil: number };
+    Ma: { obvio: number; sutil: number };
+  };
 }
 
 // Resultado del análisis de validez
@@ -143,9 +152,9 @@ export interface ClinicalScaleInterpretation {
 
 // Código de perfil
 export interface ProfileCode {
-  codigo: string;
+  codigo: string;  // Puede ser "28/82", "07/70", o "DLN" (Dentro de Límites Normales)
   escalasInvolucradas: string[];
-  definicion: 'bien_definido' | 'moderadamente_definido' | 'poco_definido';
+  definicion: 'bien_definido' | 'moderadamente_definido' | 'poco_definido' | 'no_definido' | 'dln';
   interpretacion: string;
   correlatosClinicos: string[];
   pronostico: string;
@@ -159,7 +168,9 @@ export interface MMPI2AnalysisResult {
   codigoPerfil: ProfileCode | null;
   interpretacionSuplementarias: ClinicalScaleInterpretation[];
   interpretacionContenido: ClinicalScaleInterpretation[];
-  interpretacionHarrisLingoes: { escala: string; subescalas: { nombre: string; puntaje: number; interpretacion: string }[] }[];
+  interpretacionHarrisLingoes: { escala: string; subescalas: { codigo: string; nombre: string; bruto: number; puntajeT: number; interpretacion: string }[] }[];
+  razonesObviedadSutilidad: { escala: string; nombre: string; obvio: number; sutil: number; ratio: number; interpretacion: string }[];
+  triadaNeurotica: { hs: number; d: number; hy: number; suma: number; interpretacion: string } | null;
   formulacionClinica: {
     validezProtocolo: string;
     perfilPersonalidad: string;
