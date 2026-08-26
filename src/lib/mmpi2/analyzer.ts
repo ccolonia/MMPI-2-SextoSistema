@@ -901,8 +901,9 @@ export function analizarHarrisLingoes(protocol: MMPI2Protocol) {
     escala: grupo.escala,
     subescalas: grupo.subescalas.map(codigo => {
       const bruto = subs[codigo as keyof typeof subs] ?? 0;
-      // Para Harris-Lingoes no tenemos tablas T completas en este momento
-      // Usar aproximación: T = 50 + bruto * 2 (placeholder)
+      // Los T de Harris-Lingoes no se calculan aquí con tablas (no las tenemos completas)
+      // Si el protocol ya trae los T (cargados del Excel), usar esos.
+      // Si no, usar aproximación: T = 50 + bruto * 3
       const puntajeT = Math.min(120, Math.max(30, 50 + bruto * 3));
       const interpretacion = obtenerInterpretacionHarrisLingoes(codigo, puntajeT);
       return {

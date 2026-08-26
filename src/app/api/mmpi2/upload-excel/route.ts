@@ -2,64 +2,93 @@ import { NextRequest, NextResponse } from 'next/server'
 import * as XLSX from 'xlsx'
 
 /**
- * Lee un archivo Excel de MMPI-2 (formato VS BB terceros Ezequiel) y extrae TODOS los brutos.
+ * Lee un archivo Excel de MMPI-2 (formato VS BB terceros Ezequiel) y extrae:
+ * - Puntajes brutos desde la hoja "Puntajes Brutos"
+ * - Puntajes T desde la hoja "Puntajes T" (ya calculados por el Excel de Ezequiel)
  *
- * Versión TypeScript pura (sin dependencia de Python) para compatibilidad con Vercel.
+ * Esto garantiza que los T coincidan exactamente con el informe de referencia,
+ * ya que usan los mismos valores que el Excel original.
  *
- * Estructura esperada del Excel (hoja "Puntajes Brutos"):
+ * Estructura hoja "Puntajes Brutos":
+ *   R1: L, F, K (brutos) + omisiones (col 8)
+ *   R4: Hs, D, Hy, Pd, MfM, MfF, Pa, Pt, Sc, Ma (brutos)
+ *   R7: D1-D5, Pa1-Pa3, Si1-Si3 (Harris-Lingoes brutos)
+ *   R9: Hy1-Hy5, Ma1-Ma4
+ *   R11: Pd1-Pd5, Sc1-Sc6
+ *   R17,19,21,23,25: Obviedad-Sutilidad (D, Hy, Pd, Pa, Ma)
+ *   R29: A, R, Es, MAC-R, O-H, Do, Re, Mt (suplementarias)
+ *   R31: GM, GF, PK, PS, F(p), Fb, VRIN, TRIN
+ *   R35: ANX, FRS, OBS, DEP, HEA, BIZ, ANG, CYN (contenido)
+ *   R37: ASP, TPA, LSE, SOD, FAM, WRK, TRT
  *
- * Fila 0: Headers (L, F, K, validez, ?, MASCULINO, Mujer, Hombre)
- * Fila 1: Brutos validez (L, F, K) + omisiones (col 8)
- * Fila 2-3: Headers clínicas básicas (Hs, D, Hy, Pd, MfM, MfF, Pa, Pt, Sc, Ma)
- * Fila 4: Brutos clínicas básicas
- * Fila 5-6: Headers Harris-Lingoes grupo 1 (D1-D5, Pa1-Pa3, Si1-Si3)
- * Fila 7: Brutos
- * Fila 8-9: Headers Harris-Lingoes grupo 2 (Hy1-Hy5, Ma1-Ma4)
- * Fila 10-11: Headers Harris-Lingoes grupo 3 (Pd1-Pd5, Sc1-Sc5)
- * Fila 14-25: Razones Obviedad-Sutilidad (D-O/D-S, Hy-O/Hy-S, Pd-O/Pd-S, Pa-O/Pa-S, Ma-O/Ma-S)
- * Fila 27-29: Escalas suplementarias (A, R, Es, MAC-R, O-H, Do, Re, Mt)
- * Fila 30-31: Más suplementarias (GM, GF, PK, PS, Fp, Fb, VRIN, TRIN)
- * Fila 33-37: Escalas de contenido (ANX, FRS, OBS, DEP, HEA, BIZ, ANG, CYN, ASP, TPA, LSE, SOD, FAM, WRK, TRT)
+ * Estructura hoja "Puntajes T":
+ *   R1: L, F, K (brutos)
+ *   R2: L, F, K (T)
+ *   R5: Hs, D, Hy, Pd, MfM, MfF, Pa, Pt, Sc, Ma, Si (brutos)
+ *   R6: T de las clínicas básicas
+ *   R10,13,16: brutos Harris-Lingoes
+ *   R11,14,17: T de Harris-Lingoes
  */
 
 interface ResultadoMMPI2 {
-  // Sexo del evaluado (lo infiere del Excel o usa 'masculino' por defecto)
   sexo: 'masculino' | 'femenino'
 
   // === ESCALAS DE VALIDEZ (brutos) ===
-  lBruto: number
-  fBruto: number
-  kBruto: number
-  fbBruto: number
-  fpBruto: number  // F(p)
-  vrinBruto: number
-  trinBruto: number
+  lBruto: number; lT: number
+  fBruto: number; fT: number
+  kBruto: number; kT: number
+  fbBruto: number; fbT: number
+  fpBruto: number; fpT: number  // F(p)
+  vrinBruto: number; vrinT: number
+  trinBruto: number; trinT: number
   omisiones: number
   fK: number  // F - K
 
-  // === ESCALAS CLÍNICAS BÁSICAS (brutos, SIN corregir K) ===
-  // Nota: las clínicas Hs, Pd, Pt, Sc, Ma requieren corrección K.
-  // El Excel da los brutos sin corregir; la corrección se aplica al calcular T.
-  hsBruto: number
-  dBruto: number
-  hyBruto: number
-  pdBruto: number
-  mfMBruto: number  // Mf masculino
-  mfFBruto: number  // Mf femenino
-  paBruto: number
-  ptBruto: number
-  scBruto: number
-  maBruto: number
-  siBruto: number
+  // === ESCALAS CLÍNICAS BÁSICAS (brutos + T) ===
+  hsBruto: number; hsT: number
+  dBruto: number; dT: number
+  hyBruto: number; hyT: number
+  pdBruto: number; pdT: number
+  mfMBruto: number; mfMT: number  // Mf masculino
+  mfFBruto: number; mfFT: number  // Mf femenino
+  paBruto: number; paT: number
+  ptBruto: number; ptT: number
+  scBruto: number; scT: number
+  maBruto: number; maT: number
+  siBruto: number; siT: number
 
-  // === SUBESCALAS HARRIS-LINGOES (brutos) ===
-  d1Bruto: number; d2Bruto: number; d3Bruto: number; d4Bruto: number; d5Bruto: number
-  hy1Bruto: number; hy2Bruto: number; hy3Bruto: number; hy4Bruto: number; hy5Bruto: number
-  pd1Bruto: number; pd2Bruto: number; pd3Bruto: number; pd4Bruto: number; pd5Bruto: number
-  pa1Bruto: number; pa2Bruto: number; pa3Bruto: number
-  sc1Bruto: number; sc2Bruto: number; sc3Bruto: number; sc4Bruto: number; sc5Bruto: number; sc6Bruto: number
-  ma1Bruto: number; ma2Bruto: number; ma3Bruto: number; ma4Bruto: number
-  si1Bruto: number; si2Bruto: number; si3Bruto: number
+  // === SUBESCALAS HARRIS-LINGOES (brutos + T) ===
+  d1Bruto: number; d1T: number
+  d2Bruto: number; d2T: number
+  d3Bruto: number; d3T: number
+  d4Bruto: number; d4T: number
+  d5Bruto: number; d5T: number
+  hy1Bruto: number; hy1T: number
+  hy2Bruto: number; hy2T: number
+  hy3Bruto: number; hy3T: number
+  hy4Bruto: number; hy4T: number
+  hy5Bruto: number; hy5T: number
+  pd1Bruto: number; pd1T: number
+  pd2Bruto: number; pd2T: number
+  pd3Bruto: number; pd3T: number
+  pd4Bruto: number; pd4T: number
+  pd5Bruto: number; pd5T: number
+  pa1Bruto: number; pa1T: number
+  pa2Bruto: number; pa2T: number
+  pa3Bruto: number; pa3T: number
+  sc1Bruto: number; sc1T: number
+  sc2Bruto: number; sc2T: number
+  sc3Bruto: number; sc3T: number
+  sc4Bruto: number; sc4T: number
+  sc5Bruto: number; sc5T: number
+  sc6Bruto: number; sc6T: number
+  ma1Bruto: number; ma1T: number
+  ma2Bruto: number; ma2T: number
+  ma3Bruto: number; ma3T: number
+  ma4Bruto: number; ma4T: number
+  si1Bruto: number; si1T: number
+  si2Bruto: number; si2T: number
+  si3Bruto: number; si3T: number
 
   // === RAZONES OBVIEDAD-SUTILIDAD (brutos) ===
   dObvio: number; dSutil: number
@@ -108,10 +137,6 @@ function safeNum(value: unknown, defaultValue = 0): number {
   return isNaN(num) ? defaultValue : num
 }
 
-/**
- * Extrae un valor de una celda específica de la hoja "Puntajes Brutos".
- * Asume que la estructura del Excel es fija (formato Ezequiel).
- */
 function getCell(data: any[][], row: number, col: number): any {
   if (row >= data.length) return null
   if (col >= data[row].length) return null
@@ -121,151 +146,217 @@ function getCell(data: any[][], row: number, col: number): any {
 function parseExcel(buffer: Buffer): ResultadoMMPI2 {
   const workbook = XLSX.read(buffer, { type: 'buffer' })
 
-  const sheetName = workbook.SheetNames.includes('Puntajes Brutos')
+  // === Hoja "Puntajes Brutos" ===
+  const sheetBrutosName = workbook.SheetNames.includes('Puntajes Brutos')
     ? 'Puntajes Brutos'
     : workbook.SheetNames[0]
+  const wsBrutos = workbook.Sheets[sheetBrutosName]
+  const brutos = XLSX.utils.sheet_to_json<any[]>(wsBrutos, { header: 1, defval: null })
 
-  const ws = workbook.Sheets[sheetName]
-  const data = XLSX.utils.sheet_to_json<any[]>(ws, { header: 1, defval: null })
+  // === Hoja "Puntajes T" (con T ya calculados) ===
+  const sheetTName = workbook.SheetNames.includes('Puntajes T')
+    ? 'Puntajes T'
+    : null
+  let puntajesT: any[][] = []
+  if (sheetTName) {
+    const wsT = workbook.Sheets[sheetTName]
+    puntajesT = XLSX.utils.sheet_to_json<any[]>(wsT, { header: 1, defval: null })
+  }
 
-  if (data.length < 38) {
+  if (brutos.length < 38) {
     throw new Error('El archivo no tiene suficientes filas en la hoja Puntajes Brutos')
   }
 
-  // Detectar sexo: si el header tiene "MASCULINO" en col 10, es masculino
-  // (el Excel de Ezequiel está configurado para varón por defecto)
   const sexo: 'masculino' | 'femenino' = 'masculino'
 
-  // === ESCALAS DE VALIDEZ (fila 1, cols 3-5) ===
-  // Col 3 = L, Col 4 = F, Col 5 = K, Col 8 = Omisiones (?)
-  const lBruto = safeNum(getCell(data, 1, 3), 0)
-  const fBruto = safeNum(getCell(data, 1, 4), 0)
-  const kBruto = safeNum(getCell(data, 1, 5), 0)
-  const omisiones = safeNum(getCell(data, 1, 8), 0)
+  // === ESCALAS DE VALIDEZ (brutos desde Puntajes Brutos R1) ===
+  const lBruto = safeNum(getCell(brutos, 1, 3), 0)
+  const fBruto = safeNum(getCell(brutos, 1, 4), 0)
+  const kBruto = safeNum(getCell(brutos, 1, 5), 0)
+  const omisiones = safeNum(getCell(brutos, 1, 8), 0)
   const fK = fBruto - kBruto
 
-  // === ESCALAS CLÍNICAS BÁSICAS (fila 4, cols 3-13) ===
-  // Hs=3, D=4, Hy=5, Pd=6, MfM=7, MfF=8, Pa=9, Pt=10, Sc=11, Ma=12
-  // Si está en col 13 también (necesitamos Si)
-  const hsBruto = safeNum(getCell(data, 4, 3), 0)
-  const dBruto = safeNum(getCell(data, 4, 4), 0)
-  const hyBruto = safeNum(getCell(data, 4, 5), 0)
-  const pdBruto = safeNum(getCell(data, 4, 6), 0)
-  const mfMBruto = safeNum(getCell(data, 4, 7), 0)
-  const mfFBruto = safeNum(getCell(data, 4, 8), 0)
-  const paBruto = safeNum(getCell(data, 4, 9), 0)
-  const ptBruto = safeNum(getCell(data, 4, 10), 0)
-  const scBruto = safeNum(getCell(data, 4, 11), 0)
-  const maBruto = safeNum(getCell(data, 4, 12), 0)
-  // Si está en otra columna - buscar en fila 4 todos los valores
-  // El Excel de Ezequiel tiene Si en col 13
-  const siBruto = safeNum(getCell(data, 4, 13), 0)
+  // T de validez desde Puntajes T R2 (cols 0, 1, 2)
+  const lT = puntajesT.length > 2 ? safeNum(getCell(puntajesT, 2, 0), 50) : 50
+  const fT = puntajesT.length > 2 ? safeNum(getCell(puntajesT, 2, 1), 50) : 50
+  const kT = puntajesT.length > 2 ? safeNum(getCell(puntajesT, 2, 2), 50) : 50
+  // F-K desde Puntajes T R1 col 6
+  const fK_fromExcel = puntajesT.length > 1 ? safeNum(getCell(puntajesT, 1, 6), fK) : fK
 
-  // === HARRIS-LINGOES Grupo 1 (fila 7, cols 3-12): D1-D5, Pa1-Pa3, Si1-Si3 ===
-  const d1Bruto = safeNum(getCell(data, 7, 3), 0)
-  const d2Bruto = safeNum(getCell(data, 7, 4), 0)
-  const d3Bruto = safeNum(getCell(data, 7, 5), 0)
-  const d4Bruto = safeNum(getCell(data, 7, 6), 0)
-  const d5Bruto = safeNum(getCell(data, 7, 7), 0)
-  const pa1Bruto = safeNum(getCell(data, 7, 8), 0)
-  const pa2Bruto = safeNum(getCell(data, 7, 9), 0)
-  const pa3Bruto = safeNum(getCell(data, 7, 10), 0)
-  const si1Bruto = safeNum(getCell(data, 7, 11), 0)
-  const si2Bruto = safeNum(getCell(data, 7, 12), 0)
-  // Si3 está en otra fila (puede estar en col 13 o en otra posición)
-  const si3Bruto = safeNum(getCell(data, 7, 13), 0)
+  // === ESCALAS CLÍNICAS BÁSICAS ===
+  // Brutos desde Puntajes Brutos R4 (cols 3-13)
+  const hsBruto = safeNum(getCell(brutos, 4, 3), 0)
+  const dBruto = safeNum(getCell(brutos, 4, 4), 0)
+  const hyBruto = safeNum(getCell(brutos, 4, 5), 0)
+  const pdBruto = safeNum(getCell(brutos, 4, 6), 0)
+  const mfMBruto = safeNum(getCell(brutos, 4, 7), 0)
+  const mfFBruto = safeNum(getCell(brutos, 4, 8), 0)
+  const paBruto = safeNum(getCell(brutos, 4, 9), 0)
+  const ptBruto = safeNum(getCell(brutos, 4, 10), 0)
+  const scBruto = safeNum(getCell(brutos, 4, 11), 0)
+  const maBruto = safeNum(getCell(brutos, 4, 12), 0)
+  const siBruto = safeNum(getCell(brutos, 4, 13), 0)
 
-  // === HARRIS-LINGOES Grupo 2 (fila 9, cols 3-11): Hy1-Hy5, Ma1-Ma4 ===
-  const hy1Bruto = safeNum(getCell(data, 9, 3), 0)
-  const hy2Bruto = safeNum(getCell(data, 9, 4), 0)
-  const hy3Bruto = safeNum(getCell(data, 9, 5), 0)
-  const hy4Bruto = safeNum(getCell(data, 9, 6), 0)
-  const hy5Bruto = safeNum(getCell(data, 9, 7), 0)
-  const ma1Bruto = safeNum(getCell(data, 9, 8), 0)
-  const ma2Bruto = safeNum(getCell(data, 9, 9), 0)
-  const ma3Bruto = safeNum(getCell(data, 9, 10), 0)
-  const ma4Bruto = safeNum(getCell(data, 9, 11), 0)
+  // T desde Puntajes T R6 (cols 0-10: Hs, D, Hy, Pd, MfM, MfF, Pa, Pt, Sc, Ma, Si)
+  const hsT = puntajesT.length > 6 ? safeNum(getCell(puntajesT, 6, 0), 50) : 50
+  const dT = puntajesT.length > 6 ? safeNum(getCell(puntajesT, 6, 1), 50) : 50
+  const hyT = puntajesT.length > 6 ? safeNum(getCell(puntajesT, 6, 2), 50) : 50
+  const pdT = puntajesT.length > 6 ? safeNum(getCell(puntajesT, 6, 3), 50) : 50
+  const mfMT = puntajesT.length > 6 ? safeNum(getCell(puntajesT, 6, 4), 50) : 50
+  const mfFT = puntajesT.length > 6 ? safeNum(getCell(puntajesT, 6, 5), 50) : 50
+  const paT = puntajesT.length > 6 ? safeNum(getCell(puntajesT, 6, 6), 50) : 50
+  const ptT = puntajesT.length > 6 ? safeNum(getCell(puntajesT, 6, 7), 50) : 50
+  const scT = puntajesT.length > 6 ? safeNum(getCell(puntajesT, 6, 8), 50) : 50
+  const maT = puntajesT.length > 6 ? safeNum(getCell(puntajesT, 6, 9), 50) : 50
+  const siT = puntajesT.length > 6 ? safeNum(getCell(puntajesT, 6, 10), 50) : 50
 
-  // === HARRIS-LINGOES Grupo 3 (fila 11, cols 3-13): Pd1-Pd5, Sc1-Sc6 ===
-  const pd1Bruto = safeNum(getCell(data, 11, 3), 0)
-  const pd2Bruto = safeNum(getCell(data, 11, 4), 0)
-  const pd3Bruto = safeNum(getCell(data, 11, 5), 0)
-  const pd4Bruto = safeNum(getCell(data, 11, 6), 0)
-  const pd5Bruto = safeNum(getCell(data, 11, 7), 0)
-  const sc1Bruto = safeNum(getCell(data, 11, 8), 0)
-  const sc2Bruto = safeNum(getCell(data, 11, 9), 0)
-  const sc3Bruto = safeNum(getCell(data, 11, 10), 0)
-  const sc4Bruto = safeNum(getCell(data, 11, 11), 0)
-  const sc5Bruto = safeNum(getCell(data, 11, 12), 0)
-  const sc6Bruto = safeNum(getCell(data, 11, 13), 0)
+  // === HARRIS-LINGOES Grupo 1 (D1-D5, Pa1-Pa3, Si1-Si3) ===
+  // Brutos: Puntajes Brutos R7 (cols 3-13)
+  // T: Puntajes T R11 (cols 0-10)
+  const d1Bruto = safeNum(getCell(brutos, 7, 3), 0)
+  const d2Bruto = safeNum(getCell(brutos, 7, 4), 0)
+  const d3Bruto = safeNum(getCell(brutos, 7, 5), 0)
+  const d4Bruto = safeNum(getCell(brutos, 7, 6), 0)
+  const d5Bruto = safeNum(getCell(brutos, 7, 7), 0)
+  const pa1Bruto = safeNum(getCell(brutos, 7, 8), 0)
+  const pa2Bruto = safeNum(getCell(brutos, 7, 9), 0)
+  const pa3Bruto = safeNum(getCell(brutos, 7, 10), 0)
+  const si1Bruto = safeNum(getCell(brutos, 7, 11), 0)
+  const si2Bruto = safeNum(getCell(brutos, 7, 12), 0)
+  const si3Bruto = safeNum(getCell(brutos, 7, 13), 0)
 
-  // === RAZONES OBVIEDAD-SUTILIDAD (filas 17-25) ===
-  // R17: D-O=3, D-S=4
-  // R19: Hy-O=3, Hy-S=4
-  // R21: Pd-O=3, Pd-S=4
-  // R23: Pa-O=3, Pa-S=4
-  // R25: Ma-O=3, Ma-S=4
-  const dObvio = safeNum(getCell(data, 17, 3), 0)
-  const dSutil = safeNum(getCell(data, 17, 4), 0)
-  const hyObvio = safeNum(getCell(data, 19, 3), 0)
-  const hySutil = safeNum(getCell(data, 19, 4), 0)
-  const pdObvio = safeNum(getCell(data, 21, 3), 0)
-  const pdSutil = safeNum(getCell(data, 21, 4), 0)
-  const paObvio = safeNum(getCell(data, 23, 3), 0)
-  const paSutil = safeNum(getCell(data, 23, 4), 0)
-  const maObvio = safeNum(getCell(data, 25, 3), 0)
-  const maSutil = safeNum(getCell(data, 25, 4), 0)
+  const d1T = puntajesT.length > 11 ? safeNum(getCell(puntajesT, 11, 0), 50) : 50
+  const d2T = puntajesT.length > 11 ? safeNum(getCell(puntajesT, 11, 1), 50) : 50
+  const d3T = puntajesT.length > 11 ? safeNum(getCell(puntajesT, 11, 2), 50) : 50
+  const d4T = puntajesT.length > 11 ? safeNum(getCell(puntajesT, 11, 3), 50) : 50
+  const d5T = puntajesT.length > 11 ? safeNum(getCell(puntajesT, 11, 4), 50) : 50
+  const pa1T = puntajesT.length > 11 ? safeNum(getCell(puntajesT, 11, 5), 50) : 50
+  const pa2T = puntajesT.length > 11 ? safeNum(getCell(puntajesT, 11, 6), 50) : 50
+  const pa3T = puntajesT.length > 11 ? safeNum(getCell(puntajesT, 11, 7), 50) : 50
+  const si1T = puntajesT.length > 11 ? safeNum(getCell(puntajesT, 11, 8), 50) : 50
+  const si2T = puntajesT.length > 11 ? safeNum(getCell(puntajesT, 11, 9), 50) : 50
+  const si3T = puntajesT.length > 11 ? safeNum(getCell(puntajesT, 11, 10), 50) : 50
 
-  // === ESCALAS SUPLEMENTARIAS Grupo 1 (fila 29, cols 3-11): A, R, Es, MAC-R, O-H, Do, Re, Mt ===
-  const aBruto = safeNum(getCell(data, 29, 3), 0)
-  const rBruto = safeNum(getCell(data, 29, 4), 0)
-  const esBruto = safeNum(getCell(data, 29, 5), 0)
-  const macRBruto = safeNum(getCell(data, 29, 6), 0)
-  const ohBruto = safeNum(getCell(data, 29, 7), 0)
-  const doBruto = safeNum(getCell(data, 29, 8), 0)
-  const reBruto = safeNum(getCell(data, 29, 9), 0)
-  const mtBruto = safeNum(getCell(data, 29, 10), 0)
+  // === HARRIS-LINGOES Grupo 2 (Hy1-Hy5, Ma1-Ma4) ===
+  // Brutos: Puntajes Brutos R9 (cols 3-11)
+  // T: Puntajes T R14 (cols 0-8)
+  const hy1Bruto = safeNum(getCell(brutos, 9, 3), 0)
+  const hy2Bruto = safeNum(getCell(brutos, 9, 4), 0)
+  const hy3Bruto = safeNum(getCell(brutos, 9, 5), 0)
+  const hy4Bruto = safeNum(getCell(brutos, 9, 6), 0)
+  const hy5Bruto = safeNum(getCell(brutos, 9, 7), 0)
+  const ma1Bruto = safeNum(getCell(brutos, 9, 8), 0)
+  const ma2Bruto = safeNum(getCell(brutos, 9, 9), 0)
+  const ma3Bruto = safeNum(getCell(brutos, 9, 10), 0)
+  const ma4Bruto = safeNum(getCell(brutos, 9, 11), 0)
 
-  // === ESCALAS SUPLEMENTARIAS Grupo 2 (fila 31, cols 3-12): GM, GF, PK, PS, F(p), Fb, VRIN, TRIN ===
-  const gmBruto = safeNum(getCell(data, 31, 3), 0)
-  const gfBruto = safeNum(getCell(data, 31, 4), 0)
-  const pkBruto = safeNum(getCell(data, 31, 5), 0)
-  const psBruto = safeNum(getCell(data, 31, 6), 0)
-  const fpBruto = safeNum(getCell(data, 31, 8), 0)  // F(p) en col 8
-  const fbBruto = safeNum(getCell(data, 31, 9), 0)  // Fb en col 9
-  const vrinBruto = safeNum(getCell(data, 31, 10), 0)  // VRIN en col 10
-  const trinBruto = safeNum(getCell(data, 31, 11), 0)  // TRIN en col 11
+  const hy1T = puntajesT.length > 14 ? safeNum(getCell(puntajesT, 14, 0), 50) : 50
+  const hy2T = puntajesT.length > 14 ? safeNum(getCell(puntajesT, 14, 1), 50) : 50
+  const hy3T = puntajesT.length > 14 ? safeNum(getCell(puntajesT, 14, 2), 50) : 50
+  const hy4T = puntajesT.length > 14 ? safeNum(getCell(puntajesT, 14, 3), 50) : 50
+  const hy5T = puntajesT.length > 14 ? safeNum(getCell(puntajesT, 14, 4), 50) : 50
+  const ma1T = puntajesT.length > 14 ? safeNum(getCell(puntajesT, 14, 5), 50) : 50
+  const ma2T = puntajesT.length > 14 ? safeNum(getCell(puntajesT, 14, 6), 50) : 50
+  const ma3T = puntajesT.length > 14 ? safeNum(getCell(puntajesT, 14, 7), 50) : 50
+  const ma4T = puntajesT.length > 14 ? safeNum(getCell(puntajesT, 14, 8), 50) : 50
 
-  // === ESCALAS DE CONTENIDO Grupo 1 (fila 35, cols 3-10): ANX, FRS, OBS, DEP, HEA, BIZ, ANG, CYN ===
-  const anxBruto = safeNum(getCell(data, 35, 3), 0)
-  const frsBruto = safeNum(getCell(data, 35, 4), 0)
-  const obsBruto = safeNum(getCell(data, 35, 5), 0)
-  const depContBruto = safeNum(getCell(data, 35, 6), 0)
-  const heaBruto = safeNum(getCell(data, 35, 7), 0)
-  const bizBruto = safeNum(getCell(data, 35, 8), 0)
-  const angBruto = safeNum(getCell(data, 35, 9), 0)
-  const cynBruto = safeNum(getCell(data, 35, 10), 0)
+  // === HARRIS-LINGOES Grupo 3 (Pd1-Pd5, Sc1-Sc6) ===
+  // Brutos: Puntajes Brutos R11 (cols 3-13)
+  // T: Puntajes T R17 (cols 0-10)
+  const pd1Bruto = safeNum(getCell(brutos, 11, 3), 0)
+  const pd2Bruto = safeNum(getCell(brutos, 11, 4), 0)
+  const pd3Bruto = safeNum(getCell(brutos, 11, 5), 0)
+  const pd4Bruto = safeNum(getCell(brutos, 11, 6), 0)
+  const pd5Bruto = safeNum(getCell(brutos, 11, 7), 0)
+  const sc1Bruto = safeNum(getCell(brutos, 11, 8), 0)
+  const sc2Bruto = safeNum(getCell(brutos, 11, 9), 0)
+  const sc3Bruto = safeNum(getCell(brutos, 11, 10), 0)
+  const sc4Bruto = safeNum(getCell(brutos, 11, 11), 0)
+  const sc5Bruto = safeNum(getCell(brutos, 11, 12), 0)
+  const sc6Bruto = safeNum(getCell(brutos, 11, 13), 0)
 
-  // === ESCALAS DE CONTENIDO Grupo 2 (fila 37, cols 3-11): ASP, TPA, LSE, SOD, FAM, WRK, TRT ===
-  const aspContBruto = safeNum(getCell(data, 37, 3), 0)
-  const tpaBruto = safeNum(getCell(data, 37, 4), 0)
-  const lseBruto = safeNum(getCell(data, 37, 5), 0)
-  const sodBruto = safeNum(getCell(data, 37, 6), 0)
-  const famBruto = safeNum(getCell(data, 37, 7), 0)
-  const wrkBruto = safeNum(getCell(data, 37, 8), 0)
-  const trtBruto = safeNum(getCell(data, 37, 9), 0)
+  const pd1T = puntajesT.length > 17 ? safeNum(getCell(puntajesT, 17, 0), 50) : 50
+  const pd2T = puntajesT.length > 17 ? safeNum(getCell(puntajesT, 17, 1), 50) : 50
+  const pd3T = puntajesT.length > 17 ? safeNum(getCell(puntajesT, 17, 2), 50) : 50
+  const pd4T = puntajesT.length > 17 ? safeNum(getCell(puntajesT, 17, 3), 50) : 50
+  const pd5T = puntajesT.length > 17 ? safeNum(getCell(puntajesT, 17, 4), 50) : 50
+  const sc1T = puntajesT.length > 17 ? safeNum(getCell(puntajesT, 17, 5), 50) : 50
+  const sc2T = puntajesT.length > 17 ? safeNum(getCell(puntajesT, 17, 6), 50) : 50
+  const sc3T = puntajesT.length > 17 ? safeNum(getCell(puntajesT, 17, 7), 50) : 50
+  const sc4T = puntajesT.length > 17 ? safeNum(getCell(puntajesT, 17, 8), 50) : 50
+  const sc5T = puntajesT.length > 17 ? safeNum(getCell(puntajesT, 17, 9), 50) : 50
+  const sc6T = puntajesT.length > 17 ? safeNum(getCell(puntajesT, 17, 10), 50) : 50
+
+  // === RAZONES OBVIEDAD-SUTILIDAD ===
+  const dObvio = safeNum(getCell(brutos, 17, 3), 0)
+  const dSutil = safeNum(getCell(brutos, 17, 4), 0)
+  const hyObvio = safeNum(getCell(brutos, 19, 3), 0)
+  const hySutil = safeNum(getCell(brutos, 19, 4), 0)
+  const pdObvio = safeNum(getCell(brutos, 21, 3), 0)
+  const pdSutil = safeNum(getCell(brutos, 21, 4), 0)
+  const paObvio = safeNum(getCell(brutos, 23, 3), 0)
+  const paSutil = safeNum(getCell(brutos, 23, 4), 0)
+  const maObvio = safeNum(getCell(brutos, 25, 3), 0)
+  const maSutil = safeNum(getCell(brutos, 25, 4), 0)
+
+  // === ESCALAS SUPLEMENTARIAS (brutos desde Puntajes Brutos R29/R31) ===
+  const aBruto = safeNum(getCell(brutos, 29, 3), 0)
+  const rBruto = safeNum(getCell(brutos, 29, 4), 0)
+  const esBruto = safeNum(getCell(brutos, 29, 5), 0)
+  const macRBruto = safeNum(getCell(brutos, 29, 6), 0)
+  const ohBruto = safeNum(getCell(brutos, 29, 7), 0)
+  const doBruto = safeNum(getCell(brutos, 29, 8), 0)
+  const reBruto = safeNum(getCell(brutos, 29, 9), 0)
+  const mtBruto = safeNum(getCell(brutos, 29, 10), 0)
+
+  const gmBruto = safeNum(getCell(brutos, 31, 3), 0)
+  const gfBruto = safeNum(getCell(brutos, 31, 4), 0)
+  const pkBruto = safeNum(getCell(brutos, 31, 5), 0)
+  const psBruto = safeNum(getCell(brutos, 31, 6), 0)
+  const fpBruto = safeNum(getCell(brutos, 31, 8), 0)
+  const fbBruto = safeNum(getCell(brutos, 31, 9), 0)
+  const vrinBruto = safeNum(getCell(brutos, 31, 10), 0)
+  const trinBruto = safeNum(getCell(brutos, 31, 11), 0)
+
+  // T aproximados para validez adicional (Fb, Fp, VRIN, TRIN)
+  // Estos no están en Puntajes T, calculamos con fórmula simple
+  const fbT = fbBruto ? Math.min(120, 42 + fbBruto * 3) : 50
+  const fpT = fpBruto ? Math.min(120, 41 + fpBruto * 7) : 50
+  const vrinT = vrinBruto ? Math.min(120, 30 + vrinBruto * 4) : 50
+  const trinT = trinBruto ? Math.min(120, 50 + trinBruto * 3) : 50
+
+  // === ESCALAS DE CONTENIDO (brutos desde Puntajes Brutos R35/R37) ===
+  const anxBruto = safeNum(getCell(brutos, 35, 3), 0)
+  const frsBruto = safeNum(getCell(brutos, 35, 4), 0)
+  const obsBruto = safeNum(getCell(brutos, 35, 5), 0)
+  const depContBruto = safeNum(getCell(brutos, 35, 6), 0)
+  const heaBruto = safeNum(getCell(brutos, 35, 7), 0)
+  const bizBruto = safeNum(getCell(brutos, 35, 8), 0)
+  const angBruto = safeNum(getCell(brutos, 35, 9), 0)
+  const cynBruto = safeNum(getCell(brutos, 35, 10), 0)
+
+  const aspContBruto = safeNum(getCell(brutos, 37, 3), 0)
+  const tpaBruto = safeNum(getCell(brutos, 37, 4), 0)
+  const lseBruto = safeNum(getCell(brutos, 37, 5), 0)
+  const sodBruto = safeNum(getCell(brutos, 37, 6), 0)
+  const famBruto = safeNum(getCell(brutos, 37, 7), 0)
+  const wrkBruto = safeNum(getCell(brutos, 37, 8), 0)
+  const trtBruto = safeNum(getCell(brutos, 37, 9), 0)
 
   return {
     sexo,
-    lBruto, fBruto, kBruto, fbBruto, fpBruto, vrinBruto, trinBruto, omisiones, fK,
-    hsBruto, dBruto, hyBruto, pdBruto, mfMBruto, mfFBruto, paBruto, ptBruto, scBruto, maBruto, siBruto,
-    d1Bruto, d2Bruto, d3Bruto, d4Bruto, d5Bruto,
-    hy1Bruto, hy2Bruto, hy3Bruto, hy4Bruto, hy5Bruto,
-    pd1Bruto, pd2Bruto, pd3Bruto, pd4Bruto, pd5Bruto,
-    pa1Bruto, pa2Bruto, pa3Bruto,
-    sc1Bruto, sc2Bruto, sc3Bruto, sc4Bruto, sc5Bruto, sc6Bruto,
-    ma1Bruto, ma2Bruto, ma3Bruto, ma4Bruto,
-    si1Bruto, si2Bruto, si3Bruto,
+    lBruto, lT, fBruto, fT, kBruto, kT, fbBruto, fbT, fpBruto, fpT, vrinBruto, vrinT, trinBruto, trinT,
+    omisiones, fK: fK_fromExcel,
+    hsBruto, hsT, dBruto, dT, hyBruto, hyT, pdBruto, pdT,
+    mfMBruto, mfMT, mfFBruto, mfFT,
+    paBruto, paT, ptBruto, ptT, scBruto, scT, maBruto, maT, siBruto, siT,
+    d1Bruto, d1T, d2Bruto, d2T, d3Bruto, d3T, d4Bruto, d4T, d5Bruto, d5T,
+    hy1Bruto, hy1T, hy2Bruto, hy2T, hy3Bruto, hy3T, hy4Bruto, hy4T, hy5Bruto, hy5T,
+    pd1Bruto, pd1T, pd2Bruto, pd2T, pd3Bruto, pd3T, pd4Bruto, pd4T, pd5Bruto, pd5T,
+    pa1Bruto, pa1T, pa2Bruto, pa2T, pa3Bruto, pa3T,
+    sc1Bruto, sc1T, sc2Bruto, sc2T, sc3Bruto, sc3T, sc4Bruto, sc4T, sc5Bruto, sc5T, sc6Bruto, sc6T,
+    ma1Bruto, ma1T, ma2Bruto, ma2T, ma3Bruto, ma3T, ma4Bruto, ma4T,
+    si1Bruto, si1T, si2Bruto, si2T, si3Bruto, si3T,
     dObvio, dSutil, hyObvio, hySutil, pdObvio, pdSutil, paObvio, paSutil, maObvio, maSutil,
     aBruto, rBruto, esBruto, macRBruto, ohBruto, doBruto, reBruto, mtBruto,
     gmBruto, gfBruto, pkBruto, psBruto,
@@ -334,8 +425,8 @@ export async function GET() {
   return NextResponse.json({
     endpoint: '/api/mmpi2/upload-excel',
     method: 'POST',
-    description: 'Procesa un archivo Excel de MMPI-2 (formato VS BB terceros) y extrae TODOS los puntajes brutos: validez, clínicas básicas, Harris-Lingoes, Obviedad-Sutilidad, suplementarias y contenido',
+    description: 'Procesa un archivo Excel de MMPI-2 (formato VS BB terceros Ezequiel) y extrae brutos Y T calculados desde las hojas "Puntajes Brutos" y "Puntajes T"',
     accept: 'multipart/form-data con campo "file" (.xls, .xlsx)',
-    format: 'Hoja "Puntajes Brutos" con estructura Ezequiel (L/F/K en R1, clínicas en R4, Harris-Lingoes en R7/R9/R11, Obviedad-Sutilidad en R17-R25, suplementarias en R29/R31, contenido en R35/R37)',
+    notas: 'Los T de escalas clínicas, validez y Harris-Lingoes se leen directamente de la hoja "Puntajes T" del Excel. Los T de suplementarias y contenido se calculan con fórmula aproximada (no hay tablas T completas en el código).',
   })
 }

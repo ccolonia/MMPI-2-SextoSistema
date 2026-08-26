@@ -280,30 +280,24 @@ export default function Home() {
 
       // Actualizar todo el protocolo de una vez
       setProtocol(prev => {
-        // Construir escalas clínicas con T calculado desde brutos
-        // Por ahora usamos los brutos directos como aproximación de T
-        // (en producción real debería llamarse a convertirAT)
+        // Construir escalas clínicas con T REALES del Excel (hoja "Puntajes T")
         const nuevasEscalas = { ...prev.escalasClinicas }
 
-        // Las escalas clínicas vienen como brutos en data
-        // Para simplicidad, los convertimos a T usando una función simple
-        // (el analyzer ya los recibe como T en el protocol)
         if (data.hsBruto !== undefined) {
-          // Aproximación: T = 50 + bruto (placeholder, mejorar después)
-          // En realidad estos brutos se deben convertir con tablas T
-          nuevasEscalas.Hs = data.hsBruto ? Math.min(120, 30 + data.hsBruto * 2) : prev.escalasClinicas.Hs
-          nuevasEscalas.D = data.dBruto ? Math.min(120, 30 + data.dBruto * 2) : prev.escalasClinicas.D
-          nuevasEscalas.Hy = data.hyBruto ? Math.min(120, 30 + data.hyBruto * 2) : prev.escalasClinicas.Hy
-          nuevasEscalas.Pd = data.pdBruto ? Math.min(120, 30 + data.pdBruto * 2) : prev.escalasClinicas.Pd
-          nuevasEscalas.Pa = data.paBruto ? Math.min(120, 30 + data.paBruto * 2) : prev.escalasClinicas.Pa
-          nuevasEscalas.Pt = data.ptBruto ? Math.min(120, 30 + data.ptBruto * 2) : prev.escalasClinicas.Pt
-          nuevasEscalas.Sc = data.scBruto ? Math.min(120, 30 + data.scBruto * 2) : prev.escalasClinicas.Sc
-          nuevasEscalas.Ma = data.maBruto ? Math.min(120, 30 + data.maBruto * 2) : prev.escalasClinicas.Ma
-          nuevasEscalas.Si = data.siBruto ? Math.min(120, 30 + data.siBruto * 2) : prev.escalasClinicas.Si
-          nuevasEscalas.Mf = data.mfMBruto ? Math.min(120, 30 + data.mfMBruto * 2) : prev.escalasClinicas.Mf
+          // Usar T reales del Excel
+          nuevasEscalas.Hs = data.hsT ?? prev.escalasClinicas.Hs
+          nuevasEscalas.D = data.dT ?? prev.escalasClinicas.D
+          nuevasEscalas.Hy = data.hyT ?? prev.escalasClinicas.Hy
+          nuevasEscalas.Pd = data.pdT ?? prev.escalasClinicas.Pd
+          nuevasEscalas.Pa = data.paT ?? prev.escalasClinicas.Pa
+          nuevasEscalas.Pt = data.ptT ?? prev.escalasClinicas.Pt
+          nuevasEscalas.Sc = data.scT ?? prev.escalasClinicas.Sc
+          nuevasEscalas.Ma = data.maT ?? prev.escalasClinicas.Ma
+          nuevasEscalas.Si = data.siT ?? prev.escalasClinicas.Si
+          nuevasEscalas.Mf = data.mfMT ?? prev.escalasClinicas.Mf
         }
 
-        // Escalas suplementarias (T calculado como aproximación)
+        // Escalas suplementarias (T aproximado desde brutos - no hay tablas T completas)
         const nuevasSuplementarias = { ...prev.escalasSuplementarias }
         if (data.aBruto !== undefined) {
           nuevasSuplementarias.A = data.aBruto ? Math.min(120, 30 + data.aBruto * 2) : 50
@@ -317,7 +311,7 @@ export default function Home() {
           nuevasSuplementarias.PS = data.psBruto ? Math.min(120, 30 + data.psBruto * 2) : 50
         }
 
-        // Escalas de contenido (T calculado como aproximación)
+        // Escalas de contenido (T aproximado desde brutos)
         const nuevasContenido = { ...prev.escalasContenido }
         if (data.anxBruto !== undefined) {
           nuevasContenido.ANX = data.anxBruto ? Math.min(120, 30 + data.anxBruto * 3) : 50
@@ -348,6 +342,18 @@ export default function Home() {
           Si1: data.si1Bruto, Si2: data.si2Bruto, Si3: data.si3Bruto,
         } : prev.subescalasHarrisLingoes
 
+        // Harris-Lingoes T (datos adicionales para el analyzer)
+        // Guardamos en un objeto separado para que el analyzer pueda usar los T reales
+        const nuevasHarrisLingoesT = data.d1T !== undefined ? {
+          D1: data.d1T, D2: data.d2T, D3: data.d3T, D4: data.d4T, D5: data.d5T,
+          Hy1: data.hy1T, Hy2: data.hy2T, Hy3: data.hy3T, Hy4: data.hy4T, Hy5: data.hy5T,
+          Pd1: data.pd1T, Pd2: data.pd2T, Pd3: data.pd3T, Pd4: data.pd4T, Pd5: data.pd5T,
+          Pa1: data.pa1T, Pa2: data.pa2T, Pa3: data.pa3T,
+          Sc1: data.sc1T, Sc2: data.sc2T, Sc3: data.sc3T, Sc4: data.sc4T, Sc5: data.sc5T, Sc6: data.sc6T,
+          Ma1: data.ma1T, Ma2: data.ma2T, Ma3: data.ma3T, Ma4: data.ma4T,
+          Si1: data.si1T, Si2: data.si2T, Si3: data.si3T,
+        } : null
+
         // Obviedad-Sutilidad
         const nuevasOS: NonNullable<MMPI2Protocol['obviedadSutilidad']> | undefined = data.dObvio !== undefined ? {
           D: { obvio: data.dObvio, sutil: data.dSutil },
@@ -359,24 +365,24 @@ export default function Home() {
 
         const result: MMPI2Protocol = {
           ...prev,
-          // Escalas de validez (brutos)
+          // Escalas de validez (usar T reales del Excel)
           omisiones: Number(data.omisiones ?? prev.omisiones),
-          vrint: data.vrinBruto ? Math.min(120, 50 + Number(data.vrinBruto) * 3) : prev.vrint,
-          trint: data.trinBruto ? Math.min(120, 50 + Number(data.trinBruto) * 3) : prev.trint,
+          vrint: data.vrinT ?? prev.vrint,
+          trint: data.trinT ?? prev.trint,
           fBruto: Number(data.fBruto ?? prev.fBruto),
-          fT: data.fBruto ? Math.min(120, 36 + Number(data.fBruto) * 2) : prev.fT,
-          fbT: data.fbBruto ? Math.min(120, 42 + Number(data.fbBruto) * 3) : prev.fbT,
+          fT: data.fT ?? prev.fT,
+          fbT: data.fbT ?? prev.fbT,
           fpBruto: Number(data.fpBruto ?? prev.fpBruto),
-          f_K: data.fK != null ? Number(data.fK) : (data.fBruto != null && data.kBruto != null ? Number(data.fBruto) - Number(data.kBruto) : prev.f_K),
+          f_K: data.fK != null ? Number(data.fK) : prev.f_K,
           lBruto: Number(data.lBruto ?? prev.lBruto),
           kBruto: Number(data.kBruto ?? prev.kBruto),
-          // Escalas clínicas
+          // Escalas clínicas (T reales del Excel)
           escalasClinicas: nuevasEscalas,
-          // Suplementarias
+          // Suplementarias (T aproximado)
           escalasSuplementarias: nuevasSuplementarias as NonNullable<MMPI2Protocol['escalasSuplementarias']>,
-          // Contenido
+          // Contenido (T aproximado)
           escalasContenido: nuevasContenido as NonNullable<MMPI2Protocol['escalasContenido']>,
-          // Harris-Lingoes
+          // Harris-Lingoes (brutos - el analyzer los usará)
           subescalasHarrisLingoes: nuevasHarrisLingoes,
           // Obviedad-Sutilidad
           obviedadSutilidad: nuevasOS,
