@@ -1387,36 +1387,18 @@ export default function Home() {
                   </Card>
                 )}
 
-                {/* Botón para cargar desde Excel */}
-                <Card className={`bg-gradient-to-r ${dataLoadedFromExcel ? 'from-gray-50 to-gray-100' : 'from-blue-50 to-indigo-50'} dark:from-blue-900/20 dark:to-indigo-900/20 border-blue-200 dark:border-blue-800`}>
+                {/* Botón para subir Excel - ÚNICA forma de cargar datos */}
+                <Card className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 border-blue-200 dark:border-blue-800">
                   <CardContent className="py-4">
                     <div className="flex items-center justify-between">
                       <div>
                         <h3 className="text-lg font-semibold text-blue-800 dark:text-blue-200">
-                          {dataLoadedFromExcel ? 'Recargar datos desde Excel' : 'Cargar datos desde archivo Excel'}
+                          Cargar datos desde archivo Excel
                         </h3>
                         <p className="text-sm text-blue-600 dark:text-blue-400">
-                          Sube el archivo Excel del MMPI-2 para cargar las escalas automáticamente
+                          Sube el archivo Excel del MMPI-2 (formato VS BB terceros) para cargar todas las escalas
                         </p>
                       </div>
-                      <Button
-                        onClick={() => handleLoadFromExcel()}
-                        disabled={loadingExcel}
-                        className={`${dataLoadedFromExcel ? 'bg-gray-600 hover:bg-gray-700' : 'bg-blue-600 hover:bg-blue-700'} text-white gap-2`}
-                        size="lg"
-                      >
-                        {loadingExcel ? (
-                          <>
-                            <Loader2 className="w-5 h-5 animate-spin" />
-                            Cargando...
-                          </>
-                        ) : (
-                          <>
-                            <FileSpreadsheet className="w-5 h-5" />
-                            {dataLoadedFromExcel ? 'Recargar Excel' : 'Cargar desde Excel'}
-                          </>
-                        )}
-                      </Button>
                       <label className="cursor-pointer">
                         <input
                           type="file"
@@ -1429,9 +1411,18 @@ export default function Home() {
                             }
                           }}
                         />
-                        <span className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium h-10 px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white">
-                          <Upload className="w-5 h-5" />
-                          Subir Excel
+                        <span className={`inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium h-10 px-4 py-2 ${loadingExcel ? 'bg-gray-400' : 'bg-purple-600 hover:bg-purple-700'} text-white`}>
+                          {loadingExcel ? (
+                            <>
+                              <Loader2 className="w-5 h-5 animate-spin" />
+                              Cargando...
+                            </>
+                          ) : (
+                            <>
+                              <Upload className="w-5 h-5" />
+                              Subir Excel
+                            </>
+                          )}
                         </span>
                       </label>
                     </div>

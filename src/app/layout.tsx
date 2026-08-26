@@ -21,6 +21,12 @@ export const metadata: Metadata = {
   icons: {
     icon: "/logo.svg",
   },
+  // Prevenir caché del navegador para que siempre cargue la versión más reciente
+  other: {
+    'Cache-Control': 'no-cache, no-store, must-revalidate',
+    'Pragma': 'no-cache',
+    'Expires': '0',
+  },
 };
 
 export default function RootLayout({
