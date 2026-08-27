@@ -503,7 +503,7 @@ export default function Home() {
       // Calificar
       const puntajesBrutos = calificarMMPI2(respuestasArray, protocol.demograficos.sexo)
 
-      // Convertir a T
+      // Convertir a T — Escalas clínicas básicas
       const escalasT = {
         Hs: convertirAT('Hs', puntajesBrutos.hsBruto, protocol.demograficos.sexo),
         D: convertirAT('D', puntajesBrutos.dBruto, protocol.demograficos.sexo),
@@ -517,15 +517,85 @@ export default function Home() {
         Si: convertirAT('Si', puntajesBrutos.siBruto, protocol.demograficos.sexo),
       }
 
-      // Actualizar protocolo con resultados
-      const protocolWithResults = {
+      // Convertir a T — Escalas de validez adicionales
+      const vrinT = Math.min(120, 30 + puntajesBrutos.vrinBruto * 4)
+      const trinT = Math.min(120, 50 + (puntajesBrutos.trinBruto - 5) * 4)
+      const fbT = convertirAT('F', puntajesBrutos.fbBruto, protocol.demograficos.sexo) // Aproximación: Fb usa tabla similar a F
+      const fpT = Math.min(120, 41 + puntajesBrutos.fpBruto * 7)
+      const fK = puntajesBrutos.fBruto - puntajesBrutos.kBruto
+
+      // Convertir a T — Escalas suplementarias (aproximación con fórmula)
+      // NOTA: No tenemos tablas T completas para suplementarias en el código,
+      // pero el analyzer las usa con los T que le pasemos
+      const escalasSuplementarias = {
+        A: Math.min(120, 30 + puntajesBrutos.aBruto * 2),
+        R: Math.min(120, 30 + puntajesBrutos.rBruto * 2),
+        Es: Math.min(120, 30 + puntajesBrutos.esBruto * 2),
+        MACR: Math.min(120, 30 + puntajesBrutos.macRBruto * 2),
+        OH: Math.min(120, 30 + puntajesBrutos.ohBruto * 3),
+        Do: Math.min(120, 30 + puntajesBrutos.doBruto * 3),
+        Re: Math.min(120, 30 + puntajesBrutos.reBruto * 2),
+        PK: Math.min(120, 30 + puntajesBrutos.pkBruto * 2),
+        PS: Math.min(120, 30 + puntajesBrutos.psBruto * 2),
+      }
+
+      // Convertir a T — Escalas de contenido (aproximación con fórmula)
+      const escalasContenido = {
+        ANX: Math.min(120, 35 + puntajesBrutos.anxBruto * 3),
+        FRS: Math.min(120, 35 + puntajesBrutos.frsBruto * 3),
+        OBS: Math.min(120, 33 + puntajesBrutos.obsBruto * 3),
+        DEP: Math.min(120, 36 + puntajesBrutos.depContBruto * 3),
+        HEA: Math.min(120, 33 + puntajesBrutos.heaBruto * 3),
+        BIZ: Math.min(120, 39 + puntajesBrutos.bizBruto * 3),
+        ANG: Math.min(120, 32 + puntajesBrutos.angBruto * 3),
+        CYN: Math.min(120, 32 + puntajesBrutos.cynBruto * 3),
+        ASP: Math.min(120, 30 + puntajesBrutos.aspContBruto * 3),
+        TPA: Math.min(120, 30 + puntajesBrutos.tpaBruto * 3),
+        LSE: Math.min(120, 35 + puntajesBrutos.lseBruto * 3),
+        SOD: Math.min(120, 32 + puntajesBrutos.sodBruto * 3),
+        FAM: Math.min(120, 33 + puntajesBrutos.famBruto * 3),
+        WRK: Math.min(120, 33 + puntajesBrutos.wrkBruto * 3),
+        TRT: Math.min(120, 33 + puntajesBrutos.trtBruto * 3),
+      }
+
+      // Subescalas Harris-Lingoes (brutos — el analyzer calcula T aproximado)
+      const subescalasHarrisLingoes = {
+        D1: puntajesBrutos.d1Bruto, D2: puntajesBrutos.d2Bruto, D3: puntajesBrutos.d3Bruto,
+        D4: puntajesBrutos.d4Bruto, D5: puntajesBrutos.d5Bruto,
+        Hy1: puntajesBrutos.hy1Bruto, Hy2: puntajesBrutos.hy2Bruto, Hy3: puntajesBrutos.hy3Bruto,
+        Hy4: puntajesBrutos.hy4Bruto, Hy5: puntajesBrutos.hy5Bruto,
+        Pd1: puntajesBrutos.pd1Bruto, Pd2: puntajesBrutos.pd2Bruto, Pd3: puntajesBrutos.pd3Bruto,
+        Pd4: puntajesBrutos.pd4Bruto, Pd5: puntajesBrutos.pd5Bruto,
+        Pa1: puntajesBrutos.pa1Bruto, Pa2: puntajesBrutos.pa2Bruto, Pa3: puntajesBrutos.pa3Bruto,
+        Sc1: puntajesBrutos.sc1Bruto, Sc2: puntajesBrutos.sc2Bruto, Sc3: puntajesBrutos.sc3Bruto,
+        Sc4: puntajesBrutos.sc4Bruto, Sc5: puntajesBrutos.sc5Bruto, Sc6: puntajesBrutos.sc6Bruto,
+        Ma1: puntajesBrutos.ma1Bruto, Ma2: puntajesBrutos.ma2Bruto, Ma3: puntajesBrutos.ma3Bruto,
+        Ma4: puntajesBrutos.ma4Bruto,
+        Si1: puntajesBrutos.si1Bruto, Si2: puntajesBrutos.si2Bruto, Si3: puntajesBrutos.si3Bruto,
+      }
+
+      // Actualizar protocolo con TODOS los resultados
+      const protocolWithResults: MMPI2Protocol = {
         ...protocol,
+        // Validez completa
         omisiones: puntajesBrutos.omisiones,
+        vrint: vrinT,
+        trint: trinT,
         fBruto: puntajesBrutos.fBruto,
         fT: convertirAT('F', puntajesBrutos.fBruto, protocol.demograficos.sexo),
+        fbT: fbT,
+        fpBruto: puntajesBrutos.fpBruto,
+        f_K: fK,
         lBruto: puntajesBrutos.lBruto,
         kBruto: puntajesBrutos.kBruto,
-        escalasClinicas: escalasT
+        // Escalas clínicas
+        escalasClinicas: escalasT,
+        // Suplementarias
+        escalasSuplementarias: escalasSuplementarias as NonNullable<MMPI2Protocol['escalasSuplementarias']>,
+        // Contenido
+        escalasContenido: escalasContenido as NonNullable<MMPI2Protocol['escalasContenido']>,
+        // Harris-Lingoes
+        subescalasHarrisLingoes: subescalasHarrisLingoes,
       }
 
       setProtocol(protocolWithResults)
