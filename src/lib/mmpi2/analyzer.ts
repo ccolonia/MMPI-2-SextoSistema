@@ -209,43 +209,45 @@ export function analizarValidez(protocol: MMPI2Protocol): ValidityAnalysis {
     problemasValidez.push('inconsistencia entre segmentos');
   }
 
+  // Verificar patrón defensivo para incluirlo en la conclusión de validez
+  const lElevadaDef = protocol.lBruto >= 7;
+  const fKNegativoDef = protocol.f_K < 0;
+  const kElevadoDef = protocol.kBruto >= 15;
+
+  // Construir texto de estilo defensivo si aplica
+  let textoDefensivo = '';
+  if (lElevadaDef && fKNegativoDef) {
+    let ratiosDef = '';
+    if (protocol.obviedadSutilidad) {
+      let defCount = 0;
+      let totalCount = 0;
+      for (const esc of ['D', 'Hy', 'Pd', 'Pa', 'Ma'] as const) {
+        const r = protocol.obviedadSutilidad[esc];
+        if (r) {
+          totalCount++;
+          const total = r.obvio + r.sutil;
+          if (total > 0 && r.obvio / total < 0.45) defCount++;
+        }
+      }
+      if (totalCount > 0) {
+        ratiosDef = ` Los ratios Obviedad/Sutilidad confirman el patrón defensivo (${defCount}/${totalCount} escalas con ratio < 0.45).`;
+      }
+    }
+    textoDefensivo = ` Se documenta un ESTILO DE RESPUESTA DEFENSIVO: L elevada (bruto=${protocol.lBruto}, T≈65), F-K=${protocol.f_K} (negativo, descarta simulación), K=${protocol.kBruto} (${kElevadoDef ? 'elevada, refuerza defensividad' : 'normal'}).${ratiosDef} Los puntajes clínicos deben considerarse como PISOS, no techos: la psicopatología real probablemente es mayor que la observada.`;
+  }
+
   if (problemasValidez.length >= 3 || fStatus === 'invalido' || omisionesStatus === 'invalido') {
     conclusionGeneral = 'invalido';
     justificacionValidez = `El protocolo es INVÁLIDO debido a: ${problemasValidez.join(', ')}. No se recomienda la interpretación de las escalas clínicas.`;
   } else if (problemasValidez.length >= 1) {
     conclusionGeneral = 'valido_reservas';
-    justificacionValidez = `El protocolo es VÁLIDO CON RESERVAS. Se detectaron: ${problemasValidez.join(', ')}. Interpretar con cautela y considerar estas limitaciones.`;
+    justificacionValidez = `El protocolo es VÁLIDO CON RESERVAS. Se detectaron: ${problemasValidez.join(', ')}.${textoDefensivo}`;
+  } else if (lElevadaDef && fKNegativoDef) {
+    conclusionGeneral = 'valido';
+    justificacionValidez = `El protocolo es ACEPTABLE para interpretación.${textoDefensivo}`;
   } else {
-    // Verificar si hay patrón defensivo para incluirlo en la conclusión de validez
-    const lElevadaDef = protocol.lBruto >= 7;
-    const fKNegativoDef = protocol.f_K < 0;
-    const kElevadoDef = protocol.kBruto >= 15;
-
-    if (lElevadaDef && fKNegativoDef) {
-      // Documentar estilo defensivo en la conclusión de validez
-      let ratiosDef = '';
-      if (protocol.obviedadSutilidad) {
-        let defCount = 0;
-        let totalCount = 0;
-        for (const esc of ['D', 'Hy', 'Pd', 'Pa', 'Ma'] as const) {
-          const r = protocol.obviedadSutilidad[esc];
-          if (r) {
-            totalCount++;
-            const total = r.obvio + r.sutil;
-            if (total > 0 && r.obvio / total < 0.45) defCount++;
-          }
-        }
-        if (totalCount > 0) {
-          ratiosDef = ` Los ratios Obviedad/Sutilidad confirman el patrón defensivo (${defCount}/${totalCount} escalas con ratio < 0.45).`;
-        }
-      }
-
-      conclusionGeneral = 'valido';
-      justificacionValidez = `El protocolo es ACEPTABLE para interpretación. Se documenta un ESTILO DE RESPUESTA DEFENSIVO: L elevada (bruto=${protocol.lBruto}, T≈65), F-K=${protocol.f_K} (negativo, descarta simulación), K=${protocol.kBruto} (${kElevadoDef ? 'elevada, refuerza defensividad' : 'normal'}).${ratiosDef} Los puntajes clínicos deben considerarse como PISOS, no techos: la psicopatología real probablemente es mayor que la observada.`;
-    } else {
-      conclusionGeneral = 'valido';
-      justificacionValidez = 'El protocolo es VÁLIDO. Las escalas de validez indican una respuesta consistente y veraz del evaluado. Se puede proceder con la interpretación clínica.';
-    }
+    conclusionGeneral = 'valido';
+    justificacionValidez = 'El protocolo es VÁLIDO. Las escalas de validez indican una respuesta consistente y veraz del evaluado. Se puede proceder con la interpretación clínica.';
   }
 
   return {
