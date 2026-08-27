@@ -19,12 +19,16 @@ export async function POST(request: NextRequest) {
     const sheetName = workbook.SheetNames[0];
     const worksheet = workbook.Sheets[sheetName];
 
-    // Convertir a JSON
-    const rawData = XLSX.utils.sheet_to_json(worksheet, { header: 1, defval: null }) as any[][];
+    // Convertir a JSON - usar raw:true para preservar valores originales
+    const rawData = XLSX.utils.sheet_to_json(worksheet, { header: 1, defval: null, blankrows: true, raw: true }) as any[][];
 
     if (rawData.length < 2) {
       return NextResponse.json({ error: 'El archivo está vacío o no tiene datos' }, { status: 400 });
     }
+
+    // Debug: ver qué tiene la primera fila
+    console.log('Primera fila:', JSON.stringify(rawData[0]));
+    console.log('Segunda fila:', JSON.stringify(rawData[1]));
 
     // Detectar si la primera fila tiene headers (texto) o son datos (números)
     const primeraFila = rawData[0] || [];
@@ -36,6 +40,10 @@ export async function POST(request: NextRequest) {
        celda.toLowerCase().includes('numero') ||
        celda.toLowerCase().includes('respuesta'))
     );
+
+    // Si no tiene headers, verificar si es formato binario
+    // Formato binario: 2 columnas, valores 1 o null/undefined
+    const esFormatoBinario = !tieneHeaders && primeraFila.length <= 3;
 
     let headers: string[] = [];
     let filaInicio = 0;
@@ -61,11 +69,6 @@ export async function POST(request: NextRequest) {
     const noContestaIdx = tieneHeaders ? headers.findIndex(h =>
       h.includes('no_contesta') || h.includes('nocontesta') || h.includes('nc')
     ) : -1;
-
-    // Detectar formato binario (Col A = Verdadero con 1, Col B = Falso con 1)
-    // Este es el formato del Excel Test.xlsx
-    const esFormatoBinario = !tieneHeaders && primeraFila.length >= 2 &&
-      typeof primeraFila[0] === 'number' && typeof primeraFila[1] === 'number';
 
     const respuestas: Array<{ numero: number; valor: boolean | null }> = [];
 
