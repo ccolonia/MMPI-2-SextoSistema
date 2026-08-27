@@ -98,20 +98,20 @@ export default function LoginPage() {
     <div className="min-h-screen bg-background flex items-center justify-center p-4">
       {/* Glow ambiental */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[600px] rounded-full bg-cyan-500/10 blur-[120px]" />
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[600px] rounded-full bg-[#85A28B]/10 blur-[120px]" />
       </div>
 
       <div className="relative w-full max-w-md">
         {/* Logo */}
         <div className="text-center mb-8">
           <img src="/sexto-logo.png" alt="Sexto Sistema" className="h-16 w-auto mx-auto mb-4" />
-          <h1 className="text-2xl font-bold text-white" style={{ fontFamily: 'var(--font-plus-jakarta)' }}>
-            Plataforma <span className="text-cyan-400">Profesional</span>
+          <h1 className="text-2xl font-bold text-[#121E14]" style={{ fontFamily: 'var(--font-plus-jakarta)' }}>
+            Plataforma <span className="text-[#4F6F52]">Profesional</span>
           </h1>
-          <p className="text-sm text-zinc-400 mt-1">Sistema de evaluación psicológica MMPI-2</p>
+          <p className="text-sm text-[#6A8A70] mt-1">Sistema de evaluación psicológica MMPI-2</p>
         </div>
 
-        <Card className="border-cyan-500/20 bg-card/80 backdrop-blur">
+        <Card className="border-[#85A28B]/30 bg-card/80 backdrop-blur">
           <Tabs defaultValue="login" className="w-full">
             <TabsList className="grid w-full grid-cols-2 mb-4">
               <TabsTrigger value="login">Iniciar Sesión</TabsTrigger>
@@ -121,7 +121,7 @@ export default function LoginPage() {
             {/* LOGIN */}
             <TabsContent value="login">
               <CardHeader>
-                <CardTitle className="text-white">Bienvenido de vuelta</CardTitle>
+                <CardTitle className="text-[#121E14]">Bienvenido de vuelta</CardTitle>
                 <CardDescription>Ingresá con tu cuenta para continuar</CardDescription>
               </CardHeader>
               <CardContent>
@@ -129,7 +129,7 @@ export default function LoginPage() {
                   <div className="space-y-2">
                     <Label htmlFor="login-email">Email</Label>
                     <div className="relative">
-                      <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500" />
+                      <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#6A8A70]" />
                       <Input
                         id="login-email"
                         type="email"
@@ -144,7 +144,7 @@ export default function LoginPage() {
                   <div className="space-y-2">
                     <Label htmlFor="login-password">Contraseña</Label>
                     <div className="relative">
-                      <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500" />
+                      <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#6A8A70]" />
                       <Input
                         id="login-password"
                         type="password"
@@ -171,7 +171,7 @@ export default function LoginPage() {
             {/* REGISTER */}
             <TabsContent value="register">
               <CardHeader>
-                <CardTitle className="text-white">Crear cuenta profesional</CardTitle>
+                <CardTitle className="text-[#121E14]">Crear cuenta profesional</CardTitle>
                 <CardDescription>Registrá tu cuenta para acceder a la plataforma</CardDescription>
               </CardHeader>
               <CardContent>
@@ -180,7 +180,7 @@ export default function LoginPage() {
                     <div className="space-y-2">
                       <Label htmlFor="reg-nombre">Nombre *</Label>
                       <div className="relative">
-                        <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500" />
+                        <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#6A8A70]" />
                         <Input
                           id="reg-nombre"
                           placeholder="Juan"
@@ -204,7 +204,7 @@ export default function LoginPage() {
                   <div className="space-y-2">
                     <Label htmlFor="reg-email">Email *</Label>
                     <div className="relative">
-                      <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500" />
+                      <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#6A8A70]" />
                       <Input
                         id="reg-email"
                         type="email"
@@ -219,7 +219,7 @@ export default function LoginPage() {
                   <div className="space-y-2">
                     <Label htmlFor="reg-password">Contraseña *</Label>
                     <div className="relative">
-                      <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500" />
+                      <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#6A8A70]" />
                       <Input
                         id="reg-password"
                         type="password"
@@ -235,7 +235,7 @@ export default function LoginPage() {
                     <div className="space-y-2">
                       <Label htmlFor="reg-matricula">Matrícula</Label>
                       <div className="relative">
-                        <Award className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500" />
+                        <Award className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#6A8A70]" />
                         <Input
                           id="reg-matricula"
                           placeholder="MP-1234"
@@ -248,7 +248,7 @@ export default function LoginPage() {
                     <div className="space-y-2">
                       <Label htmlFor="reg-telefono">Teléfono</Label>
                       <div className="relative">
-                        <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500" />
+                        <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#6A8A70]" />
                         <Input
                           id="reg-telefono"
                           placeholder="+54 9 11..."
@@ -262,7 +262,7 @@ export default function LoginPage() {
                   <div className="space-y-2">
                     <Label htmlFor="reg-institucion">Institución/Consultorio</Label>
                     <div className="relative">
-                      <Building2 className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500" />
+                      <Building2 className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#6A8A70]" />
                       <Input
                         id="reg-institucion"
                         placeholder="Consultorio privado / Hospital X"
@@ -295,7 +295,7 @@ export default function LoginPage() {
           </Tabs>
         </Card>
 
-        <p className="text-center text-xs text-zinc-500 mt-6">
+        <p className="text-center text-xs text-[#6A8A70] mt-6">
           © 2026 Sexto Sistema · Plataforma de evaluación psicológica
         </p>
       </div>

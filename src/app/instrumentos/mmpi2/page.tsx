@@ -982,7 +982,7 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-background">
       {/* Header - Sexto Sistema branding */}
-      <header className="border-b border-cyan-500/20 bg-card/80 backdrop-blur-sm sticky top-0 z-50">
+      <header className="border-b border-[#85A28B]/30 bg-card/95 backdrop-blur-sm sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 py-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
@@ -993,10 +993,10 @@ export default function Home() {
                 className="h-10 w-auto"
               />
               <div className="hidden sm:block">
-                <h1 className="text-lg font-bold text-white" style={{ fontFamily: 'var(--font-plus-jakarta), sans-serif' }}>
-                  MMPI-2 · <span className="text-cyan-400">Sexto Sistema</span>
+                <h1 className="text-lg font-bold text-[#4F6F52]" style={{ fontFamily: 'var(--font-playfair), serif' }}>
+                  MMPI-2 · <span className="text-[#85A28B]">Sexto Sistema</span>
                 </h1>
-                <p className="text-xs text-zinc-400">
+                <p className="text-xs text-[#6A8A70]">
                   Guía de Sanz (2008) · Universidad de Buenos Aires
                 </p>
               </div>
@@ -1004,7 +1004,7 @@ export default function Home() {
             <div className="flex items-center gap-4">
               <a
                 href="/dashboard"
-                className="text-xs text-zinc-400 hover:text-cyan-400 transition-colors flex items-center gap-1"
+                className="text-xs text-[#6A8A70] hover:text-[#4F6F52] transition-colors flex items-center gap-1"
               >
                 ← Dashboard
               </a>
@@ -1012,7 +1012,7 @@ export default function Home() {
                 href="https://www.sextoSistema.com"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-xs text-zinc-500 hover:text-cyan-400 transition-colors hidden md:block"
+                className="text-xs text-[#6A8A70] hover:text-[#4F6F52] transition-colors hidden md:block"
               >
                 sextoSistema.com →
               </a>
@@ -2096,9 +2096,9 @@ export default function Home() {
         </Tabs>
       </main>
 
-      {/* Footer - Sexto Sistema */}
-      <footer className="border-t border-cyan-500/20 bg-card mt-12">
-        <div className="max-w-7xl mx-auto px-4 py-6">
+      {/* Footer - Sexto Sistema (dark obsidian) */}
+      <footer className="bg-[#121E14] text-[#EBE4D6] mt-12">
+        <div className="max-w-7xl mx-auto px-4 py-8">
           <div className="flex flex-col md:flex-row items-center justify-between gap-4">
             <div className="flex items-center gap-3">
               <img
@@ -2107,22 +2107,22 @@ export default function Home() {
                 className="h-8 w-auto"
               />
               <div>
-                <p className="text-sm font-semibold text-white">
+                <p className="text-sm font-semibold text-[#F5F1E8]" style={{ fontFamily: 'var(--font-playfair), serif' }}>
                   Sexto Sistema · MMPI-2
                 </p>
-                <p className="text-xs text-zinc-500">
+                <p className="text-xs text-[#A8C3A0]">
                   Plataforma profesional de evaluación psicológica
                 </p>
               </div>
             </div>
-            <div className="flex items-center gap-6 text-xs text-zinc-500">
-              <a href="https://www.sextoSistema.com" target="_blank" rel="noopener noreferrer" className="hover:text-cyan-400 transition-colors">
+            <div className="flex items-center gap-6 text-xs text-[#A8C3A0]">
+              <a href="https://www.sextoSistema.com" target="_blank" rel="noopener noreferrer" className="hover:text-[#F5F1E8] transition-colors">
                 sextoSistema.com
               </a>
               <span>© 2026 Sexto Sistema</span>
             </div>
           </div>
-          <p className="text-xs text-zinc-600 mt-4 text-center md:text-left">
+          <p className="text-xs text-[#85A28B] mt-4 text-center md:text-left">
             Este informe fue elaborado con base en los puntajes T y puntajes brutos del archivo MMPI-2 proporcionado,
             interpretados conforme a los criterios de Sanz (Guía MMPI-2, 2008), Graham, Butcher y colaboradores.
             La interpretación automatizada no reemplaza el juicio clínico integrado.

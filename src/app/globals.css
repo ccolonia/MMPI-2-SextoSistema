@@ -6,8 +6,8 @@
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-inter);
-  --font-mono: var(--font-inter);
+  --font-sans: var(--font-montserrat);
+  --font-mono: var(--font-montserrat);
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
@@ -43,94 +43,94 @@
   --radius-xl: calc(var(--radius) + 4px);
 }
 
-/* === SEXTO SISTEMA BRAND PALETTE === */
-/* Dark mode por defecto (sextoSistema.com es dark) */
+/* === SEXTO SISTEMA BRAND PALETTE (Sage/Forest/Ivory) === */
+/* Basado en redescuchapsicologica.com */
 :root {
   --radius: 0.75rem;
 
-  /* Backgrounds */
-  --background: #000000;        /* pure black */
-  --foreground: #FFFFFF;        /* white text */
-  --card: #09090B;              /* zinc-950 */
-  --card-foreground: #FFFFFF;
-  --popover: #18181B;           /* zinc-900 */
-  --popover-foreground: #FFFFFF;
+  /* Backgrounds - Snow White / Ivory */
+  --background: #F5F1E8;        /* snow white warm ivory */
+  --foreground: #121E14;        /* obsidian green-black */
+  --card: #FFFFFF;              /* pure white */
+  --card-foreground: #121E14;
+  --popover: #FFFFFF;
+  --popover-foreground: #121E14;
 
-  /* Primary: Sexto Sistema cyan */
-  --primary: #06B6D4;           /* cyan-500 */
-  --primary-foreground: #000000;
+  /* Primary - Forest green */
+  --primary: #4F6F52;           /* forest-500 - heading green */
+  --primary-foreground: #FFFFFF;
 
-  /* Secondary */
-  --secondary: #18181B;         /* zinc-900 */
-  --secondary-foreground: #E4E4E7;
+  /* Secondary - Sage */
+  --secondary: #DDE9DB;         /* sage-100 light tint */
+  --secondary-foreground: #121E14;
 
   /* Muted */
-  --muted: #18181B;             /* zinc-900 */
-  --muted-foreground: #A1A1AA;  /* zinc-400 */
+  --muted: #EBE4D6;             /* beige-200 */
+  --muted-foreground: #6A8A70;  /* forest-400 */
 
-  /* Accent (cyan glow) */
-  --accent: #06B6D4;
-  --accent-foreground: #000000;
+  /* Accent - Sage green */
+  --accent: #85A28B;            /* forest-300 - CTA color */
+  --accent-foreground: #FFFFFF;
 
   /* Destructive */
-  --destructive: #EF4444;       /* red-500 */
+  --destructive: #8A3D3D;       /* terracotta */
 
-  /* Borders - cyan @ 15% alpha */
-  --border: rgba(6, 182, 212, 0.15);
-  --input: rgba(6, 182, 212, 0.2);
-  --ring: #06B6D4;
+  /* Borders - sage at low opacity */
+  --border: rgba(133, 162, 139, 0.3);
+  --input: rgba(133, 162, 139, 0.4);
+  --ring: #85A28B;
 
-  /* Charts */
-  --chart-1: #06B6D4;           /* cyan-500 */
-  --chart-2: #22D3EE;           /* cyan-400 */
-  --chart-3: #0891B2;           /* cyan-600 */
-  --chart-4: #67E8F9;           /* cyan-300 */
-  --chart-5: #0E7490;           /* cyan-700 */
+  /* Charts - sage/forest ramp */
+  --chart-1: #85A28B;           /* forest-300 */
+  --chart-2: #A8C3A0;           /* sage-300 */
+  --chart-3: #4F6F52;           /* forest-500 */
+  --chart-4: #6A8A70;           /* forest-400 */
+  --chart-5: #2E4230;           /* forest-700 */
 
   /* Sidebar */
-  --sidebar: #09090B;
-  --sidebar-foreground: #FFFFFF;
-  --sidebar-primary: #06B6D4;
-  --sidebar-primary-foreground: #000000;
-  --sidebar-accent: #18181B;
-  --sidebar-accent-foreground: #FFFFFF;
-  --sidebar-border: rgba(6, 182, 212, 0.15);
-  --sidebar-ring: #06B6D4;
+  --sidebar: #FFFFFF;
+  --sidebar-foreground: #121E14;
+  --sidebar-primary: #4F6F52;
+  --sidebar-primary-foreground: #FFFFFF;
+  --sidebar-accent: #DDE9DB;
+  --sidebar-accent-foreground: #121E14;
+  --sidebar-border: rgba(133, 162, 139, 0.3);
+  --sidebar-ring: #85A28B;
 }
 
+/* Dark mode (for elements that need it - footer, dark sections) */
 .dark {
-  /* Same as :root since we're dark-first */
-  --background: #000000;
-  --foreground: #FFFFFF;
-  --card: #09090B;
-  --card-foreground: #FFFFFF;
-  --popover: #18181B;
-  --popover-foreground: #FFFFFF;
-  --primary: #06B6D4;
-  --primary-foreground: #000000;
-  --secondary: #18181B;
-  --secondary-foreground: #E4E4E7;
-  --muted: #18181B;
-  --muted-foreground: #A1A1AA;
-  --accent: #06B6D4;
-  --accent-foreground: #000000;
-  --destructive: #EF4444;
-  --border: rgba(6, 182, 212, 0.15);
-  --input: rgba(6, 182, 212, 0.2);
-  --ring: #06B6D4;
-  --chart-1: #06B6D4;
-  --chart-2: #22D3EE;
-  --chart-3: #0891B2;
-  --chart-4: #67E8F9;
-  --chart-5: #0E7490;
-  --sidebar: #09090B;
-  --sidebar-foreground: #FFFFFF;
-  --sidebar-primary: #06B6D4;
-  --sidebar-primary-foreground: #000000;
-  --sidebar-accent: #18181B;
-  --sidebar-accent-foreground: #FFFFFF;
-  --sidebar-border: rgba(6, 182, 212, 0.15);
-  --sidebar-ring: #06B6D4;
+  --background: #121E14;        /* obsidian */
+  --foreground: #F5F1E8;        /* ivory */
+  --card: #1A3021;              /* obsidian variant */
+  --card-foreground: #F5F1E8;
+  --popover: #121E14;
+  --popover-foreground: #F5F1E8;
+  --primary: #85A28B;           /* sage CTA */
+  --primary-foreground: #121E14;
+  --secondary: #2E4230;
+  --secondary-foreground: #F5F1E8;
+  --muted: #2E4230;
+  --muted-foreground: #A8C3A0;
+  --accent: #85A28B;
+  --accent-foreground: #121E14;
+  --destructive: #8A3D3D;
+  --border: rgba(168, 195, 160, 0.2);
+  --input: rgba(168, 195, 160, 0.3);
+  --ring: #85A28B;
+  --chart-1: #85A28B;
+  --chart-2: #A8C3A0;
+  --chart-3: #4F6F52;
+  --chart-4: #6A8A70;
+  --chart-5: #2E4230;
+  --sidebar: #121E14;
+  --sidebar-foreground: #F5F1E8;
+  --sidebar-primary: #85A28B;
+  --sidebar-primary-foreground: #121E14;
+  --sidebar-accent: #2E4230;
+  --sidebar-accent-foreground: #F5F1E8;
+  --sidebar-border: rgba(168, 195, 160, 0.2);
+  --sidebar-ring: #85A28B;
 }
 
 @layer base {
@@ -139,43 +139,51 @@
   }
   body {
     @apply bg-background text-foreground;
-    font-family: var(--font-inter), system-ui, sans-serif;
+    font-family: var(--font-montserrat), system-ui, sans-serif;
   }
   h1, h2, h3, h4, h5, h6 {
-    font-family: var(--font-plus-jakarta), var(--font-inter), system-ui, sans-serif;
+    font-family: var(--font-playfair), Georgia, serif;
+    color: var(--primary);
   }
 }
 
-/* === SEXTO SISTEMA SIGNATURE GRADIENT BUTTON === */
+/* === SEXTO SISTEMA SIGNATURE BUTTON === */
 .btn-sexto {
-  background: linear-gradient(135deg, #0891B2 0%, #06B6D4 30%, #22D3EE 60%, #06B6D4 100%);
-  background-size: 200% 200%;
-  animation: gradient-shift 4s infinite;
-  box-shadow: 0 0 0 1px rgba(6,182,212,.5), 0 4px 24px rgba(6,182,212,.4), inset 0 1px 0 rgba(255,255,255,.2);
-  color: #000000;
-  font-weight: 600;
-  border-radius: 12px;
+  background: #85A28B;
+  color: #FFFFFF;
+  font-weight: 500;
+  border-radius: 14px;
   transition: all 0.3s ease;
+  font-family: var(--font-montserrat), sans-serif;
 }
 
 .btn-sexto:hover {
-  filter: brightness(1.1);
-  transform: translateY(-2px) scale(1.02);
-  box-shadow: 0 0 0 1px rgba(6,182,212,.7), 0 8px 32px rgba(6,182,212,.6), inset 0 1px 0 rgba(255,255,255,.3);
+  background: #4F6F52;
+  transform: translateY(-1px);
 }
 
-@keyframes gradient-shift {
-  0% { background-position: 0% 50%; }
-  50% { background-position: 100% 50%; }
-  100% { background-position: 0% 50%; }
+/* Glass button (hero style) */
+.btn-sexto-glass {
+  background: rgba(168, 195, 160, 0.25);
+  color: #121E14;
+  border: 1px solid rgba(168, 195, 160, 0.5);
+  font-weight: 500;
+  border-radius: 14px;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(8px);
 }
 
-/* Ambient cyan glow */
-.cyan-glow {
+.btn-sexto-glass:hover {
+  background: rgba(168, 195, 160, 0.4);
+  transform: translateY(-1px);
+}
+
+/* Ambient sage glow */
+.sage-glow {
   position: relative;
 }
 
-.cyan-glow::before {
+.sage-glow::before {
   content: '';
   position: absolute;
   top: 0;
@@ -183,7 +191,7 @@
   transform: translateX(-50%);
   width: 100%;
   height: 100%;
-  background: radial-gradient(at 50% 0%, rgba(6,182,212,0.1) 0%, transparent 50%);
+  background: radial-gradient(at 50% 0%, rgba(133, 162, 139, 0.1) 0%, transparent 50%);
   pointer-events: none;
   z-index: -1;
 }
