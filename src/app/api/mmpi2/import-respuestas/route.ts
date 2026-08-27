@@ -20,64 +20,101 @@ export async function POST(request: NextRequest) {
     const worksheet = workbook.Sheets[sheetName];
 
     // Convertir a JSON
-    const rawData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
+    const rawData = XLSX.utils.sheet_to_json(worksheet, { header: 1, defval: null }) as any[][];
 
     if (rawData.length < 2) {
       return NextResponse.json({ error: 'El archivo está vacío o no tiene datos' }, { status: 400 });
     }
 
-    // Obtener encabezados
-    const headers = (rawData[0] as string[]).map(h =>
-      String(h || '').toLowerCase().replace(/[\s-]/g, '_')
+    // Detectar si la primera fila tiene headers (texto) o son datos (números)
+    const primeraFila = rawData[0] || [];
+    const tieneHeaders = primeraFila.some(celda =>
+      typeof celda === 'string' && celda.length > 0 &&
+      (celda.toLowerCase().includes('pregunta') ||
+       celda.toLowerCase().includes('verdadero') ||
+       celda.toLowerCase().includes('falso') ||
+       celda.toLowerCase().includes('numero') ||
+       celda.toLowerCase().includes('respuesta'))
     );
 
-    // Buscar columnas
-    const preguntaIdx = headers.findIndex(h =>
+    let headers: string[] = [];
+    let filaInicio = 0;
+
+    if (tieneHeaders) {
+      headers = primeraFila.map(h => String(h || '').toLowerCase().replace(/[\s-]/g, '_'));
+      filaInicio = 1;
+    }
+
+    // Buscar columnas por header (solo si hay headers)
+    const preguntaIdx = tieneHeaders ? headers.findIndex(h =>
       h.includes('pregunta') || h.includes('numero') || h.includes('num') || h === 'n'
-    );
-    const verdaderoIdx = headers.findIndex(h =>
+    ) : -1;
+
+    const verdaderoIdx = tieneHeaders ? headers.findIndex(h =>
       h.includes('verdadero') || h === 'v' || h === 'true'
-    );
-    const falsoIdx = headers.findIndex(h =>
+    ) : -1;
+
+    const falsoIdx = tieneHeaders ? headers.findIndex(h =>
       h.includes('falso') || h === 'f' || h === 'false'
-    );
-    const noContestaIdx = headers.findIndex(h =>
+    ) : -1;
+
+    const noContestaIdx = tieneHeaders ? headers.findIndex(h =>
       h.includes('no_contesta') || h.includes('nocontesta') || h.includes('nc')
-    );
+    ) : -1;
+
+    // Detectar formato binario (Col A = Verdadero con 1, Col B = Falso con 1)
+    // Este es el formato del Excel Test.xlsx
+    const esFormatoBinario = !tieneHeaders && primeraFila.length >= 2 &&
+      typeof primeraFila[0] === 'number' && typeof primeraFila[1] === 'number';
 
     const respuestas: Array<{ numero: number; valor: boolean | null }> = [];
 
-    // Procesar filas (empezando desde la fila 1, saltando encabezados)
-    for (let i = 1; i < rawData.length; i++) {
-      const row = rawData[i] as any[];
-
+    for (let i = filaInicio; i < rawData.length; i++) {
+      const row = rawData[i];
       if (!row || row.length === 0) continue;
 
       try {
-        // Obtener número de pregunta
-        const num = preguntaIdx >= 0 ? parseInt(row[preguntaIdx]) : i;
+        // Determinar número de pregunta
+        const num = preguntaIdx >= 0 ? parseInt(row[preguntaIdx]) : (i + 1 - filaInicio);
 
         if (isNaN(num) || num < 1 || num > 567) continue;
 
-        // Obtener valores
-        const verdaderoVal = verdaderoIdx >= 0 ? parseInt(row[verdaderoIdx]) || 0 : 0;
-        const falsoVal = falsoIdx >= 0 ? parseInt(row[falsoIdx]) || 0 : 0;
-        const noContestaVal = noContestaIdx >= 0 ? parseInt(row[noContestaIdx]) || 0 : 0;
-
-        // Determinar respuesta
         let valor: boolean | null;
 
-        if (noContestaVal === 1) {
-          valor = null; // No contesta
-        } else if (verdaderoVal === 1 && falsoVal !== 1) {
-          valor = true;
-        } else if (falsoVal === 1 && verdaderoVal !== 1) {
-          valor = false;
-        } else if (verdaderoVal === 1 && falsoVal === 1) {
-          continue; // Ambos marcados, inválido
+        if (esFormatoBinario) {
+          // Formato binario: Col 0 = V (1=sí), Col 1 = F (1=sí)
+          const vVal = Number(row[0]) || 0;
+          const fVal = Number(row[1]) || 0;
+
+          if (vVal === 1 && fVal !== 1) {
+            valor = true;
+          } else if (fVal === 1 && vVal !== 1) {
+            valor = false;
+          } else if (vVal === 1 && fVal === 1) {
+            continue; // Ambos marcados, inválido
+          } else {
+            valor = null; // Ninguno marcado = No contesta
+          }
+        } else if (verdaderoIdx >= 0 || falsoIdx >= 0) {
+          // Formato con headers
+          const verdaderoVal = verdaderoIdx >= 0 ? Number(row[verdaderoIdx]) || 0 : 0;
+          const falsoVal = falsoIdx >= 0 ? Number(row[falsoIdx]) || 0 : 0;
+          const noContestaVal = noContestaIdx >= 0 ? Number(row[noContestaIdx]) || 0 : 0;
+
+          if (noContestaVal === 1) {
+            valor = null;
+          } else if (verdaderoVal === 1 && falsoVal !== 1) {
+            valor = true;
+          } else if (falsoVal === 1 && verdaderoVal !== 1) {
+            valor = false;
+          } else if (verdaderoVal === 1 && falsoVal === 1) {
+            continue;
+          } else {
+            continue;
+          }
         } else {
-          // Intentar parsear formato antiguo (solo valor en columna)
-          const valorRaw = String(row[verdaderoIdx >= 0 ? verdaderoIdx : 1] || '').toUpperCase();
+          // Formato de valor único en columna
+          const valorRaw = String(row[0] || '').toUpperCase().trim();
 
           if (['V', 'VERDADERO', 'TRUE', '1', 'S', 'SI', 'SÍ', 'T'].includes(valorRaw)) {
             valor = true;
@@ -99,7 +136,7 @@ export async function POST(request: NextRequest) {
 
     if (respuestas.length === 0) {
       return NextResponse.json({
-        error: 'No se encontraron respuestas válidas en el archivo. Verifique el formato.\n\nFormato esperado:\n- Columna "Pregunta" con números del 1 al 567\n- Columna "Verdadero" con 1 o 0\n- Columna "Falso" con 1 o 0\n- Columna "No_Contesta" con 1 o 0 (opcional)'
+        error: 'No se encontraron respuestas válidas en el archivo. Formatos aceptados:\n\n1. Binario: Col A=Verdadero(1), Col B=Falso(1)\n2. Con headers: Pregunta, Verdadero, Falso, No_Contesta\n3. Valor único: V/F o Verdadero/Falso'
       }, { status: 400 });
     }
 
