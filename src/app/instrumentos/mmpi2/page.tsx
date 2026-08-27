@@ -680,6 +680,7 @@ export default function Home() {
       const response = await fetch('/api/informes', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
         body: JSON.stringify({
           demograficos: protocol.demograficos,
           omisiones: protocol.omisiones,
@@ -719,7 +720,9 @@ export default function Home() {
   const loadInformesGuardados = async () => {
     setLoadingInformes(true)
     try {
-      const response = await fetch('/api/informes')
+      const response = await fetch('/api/informes', {
+        credentials: 'include',
+      })
       const informes = await response.json()
       setInformesGuardados(informes)
     } catch (error) {
@@ -732,7 +735,9 @@ export default function Home() {
   // Función para cargar un informe específico
   const handleLoadInforme = async (id: string) => {
     try {
-      const response = await fetch(`/api/informes?id=${id}`)
+      const response = await fetch(`/api/informes?id=${id}`, {
+        credentials: 'include',
+      })
       const informes = await response.json()
       
       if (informes && informes.length > 0) {
@@ -802,7 +807,8 @@ export default function Home() {
     
     try {
       const response = await fetch(`/api/informes?id=${id}`, {
-        method: 'DELETE'
+        method: 'DELETE',
+        credentials: 'include',
       })
       const result = await response.json()
       

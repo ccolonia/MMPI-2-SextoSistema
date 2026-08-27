@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Loader2, LogOut, Users, FileText, Brain, Plus, Search } from 'lucide-react'
+import { Loader2, LogOut, Users, FileText, Brain, Plus, Clock } from 'lucide-react'
 
 interface User {
   id: string
@@ -16,26 +16,44 @@ interface User {
   rol: string
 }
 
+interface DashboardData {
+  stats: {
+    totalPacientes: number
+    totalEvaluaciones: number
+    totalInformes: number
+  }
+  evaluacionesRecientes: Array<{
+    id: string
+    nombreEvaluado: string | null
+    fechaEvaluacion: string | null
+    evaluador: string | null
+    createdAt: string
+  }>
+}
+
 export default function DashboardPage() {
   const router = useRouter()
   const [user, setUser] = useState<User | null>(null)
+  const [dashboardData, setDashboardData] = useState<DashboardData | null>(null)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    fetch('/api/auth/me')
-      .then(r => r.json())
-      .then(data => {
-        if (!data.user) {
-          router.push('/login')
-        } else {
-          setUser(data.user)
-        }
-        setLoading(false)
-      })
-      .catch(() => {
+    // Cargar usuario y datos del dashboard en paralelo
+    Promise.all([
+      fetch('/api/auth/me').then(r => r.json()),
+      fetch('/api/dashboard', { credentials: 'include' }).then(r => r.json()),
+    ]).then(([userData, dashData]) => {
+      if (!userData.user) {
         router.push('/login')
-        setLoading(false)
-      })
+      } else {
+        setUser(userData.user)
+        if (dashData.stats) setDashboardData(dashData)
+      }
+      setLoading(false)
+    }).catch(() => {
+      router.push('/login')
+      setLoading(false)
+    })
   }, [router])
 
   const handleLogout = async () => {
@@ -53,6 +71,9 @@ export default function DashboardPage() {
   }
 
   if (!user) return null
+
+  const totalEval = dashboardData?.stats.totalInformes || 0
+  const totalPac = dashboardData?.stats.totalPacientes || 0
 
   return (
     <div className="min-h-screen bg-background">
@@ -104,7 +125,7 @@ export default function DashboardPage() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-zinc-400">Pacientes</p>
-                  <p className="text-3xl font-bold text-white">0</p>
+                  <p className="text-3xl font-bold text-white">{totalPac}</p>
                 </div>
                 <Users className="w-10 h-10 text-cyan-500" />
               </div>
@@ -114,8 +135,8 @@ export default function DashboardPage() {
             <CardContent className="pt-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-zinc-400">Evaluaciones</p>
-                  <p className="text-3xl font-bold text-white">0</p>
+                  <p className="text-sm text-zinc-400">Informes MMPI-2</p>
+                  <p className="text-3xl font-bold text-white">{totalEval}</p>
                 </div>
                 <FileText className="w-10 h-10 text-cyan-500" />
               </div>
@@ -191,22 +212,43 @@ export default function DashboardPage() {
 
         {/* Evaluaciones recientes */}
         <div>
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="text-xl font-bold text-white">Evaluaciones recientes</h3>
-            <Button variant="outline" size="sm" className="border-cyan-500/30 text-cyan-400">
-              <Search className="w-4 h-4 mr-2" />
-              Ver todas
-            </Button>
-          </div>
+          <h3 className="text-xl font-bold text-white mb-4">Evaluaciones recientes</h3>
           <Card className="border-cyan-500/20 bg-card">
-            <CardContent className="py-12 text-center">
-              <FileText className="w-12 h-12 text-zinc-600 mx-auto mb-4" />
-              <p className="text-zinc-400 mb-4">No tenés evaluaciones todavía</p>
-              <Button className="btn-sexto" onClick={() => router.push('/instrumentos/mmpi2')}>
-                <Plus className="w-4 h-4 mr-2" />
-                Crear primera evaluación
-              </Button>
-            </CardContent>
+            {totalEval === 0 ? (
+              <CardContent className="py-12 text-center">
+                <FileText className="w-12 h-12 text-zinc-600 mx-auto mb-4" />
+                <p className="text-zinc-400 mb-4">No tenés evaluaciones todavía</p>
+                <Button className="btn-sexto" onClick={() => router.push('/instrumentos/mmpi2')}>
+                  <Plus className="w-4 h-4 mr-2" />
+                  Crear primera evaluación
+                </Button>
+              </CardContent>
+            ) : (
+              <CardContent className="pt-6">
+                <div className="space-y-2">
+                  {dashboardData?.evaluacionesRecientes.map((evaluacion) => (
+                    <div
+                      key={evaluacion.id}
+                      className="flex items-center justify-between p-3 rounded-lg border border-cyan-500/10 hover:bg-cyan-500/5 transition-colors cursor-pointer"
+                      onClick={() => router.push('/instrumentos/mmpi2')}
+                    >
+                      <div className="flex-1">
+                        <p className="font-medium text-white">{evaluacion.nombreEvaluado || 'Sin nombre'}</p>
+                        <p className="text-sm text-zinc-500 flex items-center gap-1">
+                          <Clock className="w-3 h-3" />
+                          {new Date(evaluacion.createdAt).toLocaleString('es-AR', {
+                            day: '2-digit', month: '2-digit', year: 'numeric',
+                            hour: '2-digit', minute: '2-digit',
+                            timeZone: 'America/Buenos_Aires'
+                          })}
+                        </p>
+                      </div>
+                      <FileText className="w-5 h-5 text-cyan-500" />
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            )}
           </Card>
         </div>
       </main>

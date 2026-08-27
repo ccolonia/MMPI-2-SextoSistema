@@ -1,27 +1,51 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/lib/db'
-import { v4 as uuidv4 } from 'uuid'
+import { getCurrentUser } from '@/lib/auth'
 
-// GET - Listar todos los informes
+// GET - Listar informes del profesional logueado
 export async function GET(request: NextRequest) {
   try {
+    // Verificar autenticación
+    const user = await getCurrentUser(request)
+    if (!user) {
+      return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
+    }
+
     const searchParams = request.nextUrl.searchParams
     const id = searchParams.get('id')
 
     if (id) {
-      // Obtener un informe específico
-      const informe = await db.$queryRaw`
-        SELECT * FROM "InformeMMPI2" WHERE id = ${id}
-      `
+      // Obtener un informe específico (verificando ownership)
+      const informe = await db.informeMMPI2.findFirst({
+        where: {
+          id,
+          profesionalId: user.userId,
+        }
+      })
+
+      if (!informe) {
+        return NextResponse.json({ error: 'Informe no encontrado' }, { status: 404 })
+      }
+
       return NextResponse.json(informe)
     }
 
-    // Listar todos los informes ordenados por fecha descendente
-    const informes = await db.$queryRaw`
-      SELECT id, "nombreEvaluado", "fechaEvaluacion", evaluador, "createdAt"
-      FROM "InformeMMPI2"
-      ORDER BY "createdAt" DESC
-    `
+    // Listar todos los informes DEL PROFESIONAL LOGUEADO
+    const informes = await db.informeMMPI2.findMany({
+      where: {
+        profesionalId: user.userId,
+      },
+      select: {
+        id: true,
+        nombreEvaluado: true,
+        fechaEvaluacion: true,
+        evaluador: true,
+        createdAt: true,
+      },
+      orderBy: {
+        createdAt: 'desc',
+      }
+    })
 
     return NextResponse.json(informes)
   } catch (error) {
@@ -30,11 +54,16 @@ export async function GET(request: NextRequest) {
   }
 }
 
-// POST - Guardar nuevo informe
+// POST - Guardar nuevo informe (asociado al profesional logueado)
 export async function POST(request: NextRequest) {
   try {
+    // Verificar autenticación
+    const user = await getCurrentUser(request)
+    if (!user) {
+      return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
+    }
+
     const body = await request.json()
-    const id = uuidv4()
 
     const {
       demograficos,
@@ -52,53 +81,50 @@ export async function POST(request: NextRequest) {
       analysisResult
     } = body
 
-    // Usar Prisma en lugar de SQL raw para evitar problemas de sintaxis
-    await db.$executeRaw`
-      INSERT INTO "InformeMMPI2" (
-        id, "nombreEvaluado", edad, sexo, "contextoEvaluacion", "motivoConsulta",
-        "fechaEvaluacion", evaluador, institucion,
-        omisiones, vrint, trint, "fBruto", "fT", "fbT", "fpBruto", "f_K", "lBruto", "kBruto",
-        "hsT", "dT", "hyT", "pdT", "mfT", "paT", "ptT", "scT", "maT", "siT",
-        "analysisResult", "createdAt", "updatedAt"
-      ) VALUES (
-        ${id},
-        ${demograficos?.nombreEvaluado || null},
-        ${demograficos?.edad || null},
-        ${demograficos?.sexo || null},
-        ${demograficos?.contextoEvaluacion || null},
-        ${demograficos?.motivoConsulta || null},
-        ${demograficos?.fechaEvaluacion || null},
-        ${demograficos?.evaluador || null},
-        ${demograficos?.institucion || null},
-        ${omisiones || 0},
-        ${vrint || 50},
-        ${trint || 50},
-        ${fBruto || 0},
-        ${fT || 50},
-        ${fbT || 50},
-        ${fpBruto || 0},
-        ${f_K || 0},
-        ${lBruto || 0},
-        ${kBruto || 0},
-        ${escalasClinicas?.Hs || 50},
-        ${escalasClinicas?.D || 50},
-        ${escalasClinicas?.Hy || 50},
-        ${escalasClinicas?.Pd || 50},
-        ${escalasClinicas?.Mf || 50},
-        ${escalasClinicas?.Pa || 50},
-        ${escalasClinicas?.Pt || 50},
-        ${escalasClinicas?.Sc || 50},
-        ${escalasClinicas?.Ma || 50},
-        ${escalasClinicas?.Si || 50},
-        ${JSON.stringify(analysisResult)},
-        NOW(),
-        NOW()
-      )
-    `
+    // Crear informe asociado al profesional logueado
+    const informe = await db.informeMMPI2.create({
+      data: {
+        profesionalId: user.userId,
+        nombreEvaluado: demograficos?.nombreEvaluado || null,
+        edad: demograficos?.edad || null,
+        sexo: demograficos?.sexo || null,
+        contextoEvaluacion: demograficos?.contextoEvaluacion || null,
+        motivoConsulta: demograficos?.motivoConsulta || null,
+        fechaEvaluacion: demograficos?.fechaEvaluacion || null,
+        evaluador: demograficos?.evaluador || null,
+        institucion: demograficos?.institucion || null,
+        omisiones: omisiones || 0,
+        vrint: vrint || 50,
+        trint: trint || 50,
+        fBruto: fBruto || 0,
+        fT: fT || 50,
+        fbT: fbT || 50,
+        fpBruto: fpBruto || 0,
+        f_K: f_K || 0,
+        lBruto: lBruto || 0,
+        kBruto: kBruto || 0,
+        hsT: escalasClinicas?.Hs || 50,
+        dT: escalasClinicas?.D || 50,
+        hyT: escalasClinicas?.Hy || 50,
+        pdT: escalasClinicas?.Pd || 50,
+        mfT: escalasClinicas?.Mf || 50,
+        paT: escalasClinicas?.Pa || 50,
+        ptT: escalasClinicas?.Pt || 50,
+        scT: escalasClinicas?.Sc || 50,
+        maT: escalasClinicas?.Ma || 50,
+        siT: escalasClinicas?.Si || 50,
+        analysisResult: JSON.stringify(analysisResult),
+      },
+      select: {
+        id: true,
+        nombreEvaluado: true,
+        createdAt: true,
+      }
+    })
 
     return NextResponse.json({
       success: true,
-      id,
+      id: informe.id,
       message: 'Informe guardado correctamente'
     })
   } catch (error: any) {
@@ -110,9 +136,15 @@ export async function POST(request: NextRequest) {
   }
 }
 
-// DELETE - Eliminar informe
+// DELETE - Eliminar informe (verificando ownership)
 export async function DELETE(request: NextRequest) {
   try {
+    // Verificar autenticación
+    const user = await getCurrentUser(request)
+    if (!user) {
+      return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
+    }
+
     const searchParams = request.nextUrl.searchParams
     const id = searchParams.get('id')
 
@@ -120,9 +152,21 @@ export async function DELETE(request: NextRequest) {
       return NextResponse.json({ error: 'ID requerido' }, { status: 400 })
     }
 
-    await db.$executeRaw`
-      DELETE FROM "InformeMMPI2" WHERE id = ${id}
-    `
+    // Verificar que el informe pertenece al profesional
+    const informe = await db.informeMMPI2.findFirst({
+      where: {
+        id,
+        profesionalId: user.userId,
+      }
+    })
+
+    if (!informe) {
+      return NextResponse.json({ error: 'Informe no encontrado o sin permisos' }, { status: 404 })
+    }
+
+    await db.informeMMPI2.delete({
+      where: { id }
+    })
 
     return NextResponse.json({ success: true, message: 'Informe eliminado' })
   } catch (error) {
