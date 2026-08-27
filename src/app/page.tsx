@@ -974,22 +974,35 @@ export default function Home() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800">
-      {/* Header */}
-      <header className="bg-white dark:bg-slate-800 shadow-sm border-b">
-        <div className="max-w-7xl mx-auto px-4 py-4">
+    <div className="min-h-screen bg-background">
+      {/* Header - Sexto Sistema branding */}
+      <header className="border-b border-cyan-500/20 bg-card/80 backdrop-blur-sm sticky top-0 z-50">
+        <div className="max-w-7xl mx-auto px-4 py-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <Brain className="w-8 h-8 text-emerald-600" />
-              <div>
-                <h1 className="text-xl font-bold text-slate-800 dark:text-white">
-                  MMPI-2 | Sistema de Calificación e Interpretación
+              {/* Logo Sexto Sistema */}
+              <img
+                src="/sexto-logo.png"
+                alt="Sexto Sistema"
+                className="h-10 w-auto"
+              />
+              <div className="hidden sm:block">
+                <h1 className="text-lg font-bold text-white" style={{ fontFamily: 'var(--font-plus-jakarta), sans-serif' }}>
+                  MMPI-2 · <span className="text-cyan-400">Sexto Sistema</span>
                 </h1>
-                <p className="text-sm text-slate-500 dark:text-slate-400">
-                  Basado en la Guía de Sanz (2008) - Universidad de Buenos Aires
+                <p className="text-xs text-zinc-400">
+                  Guía de Sanz (2008) · Universidad de Buenos Aires
                 </p>
               </div>
             </div>
+            <a
+              href="https://www.sextoSistema.com"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-xs text-zinc-500 hover:text-cyan-400 transition-colors hidden md:block"
+            >
+              sextoSistema.com →
+            </a>
           </div>
         </div>
       </header>
@@ -2068,6 +2081,40 @@ export default function Home() {
           </TabsContent>
         </Tabs>
       </main>
+
+      {/* Footer - Sexto Sistema */}
+      <footer className="border-t border-cyan-500/20 bg-card mt-12">
+        <div className="max-w-7xl mx-auto px-4 py-6">
+          <div className="flex flex-col md:flex-row items-center justify-between gap-4">
+            <div className="flex items-center gap-3">
+              <img
+                src="/sexto-logo.png"
+                alt="Sexto Sistema"
+                className="h-8 w-auto"
+              />
+              <div>
+                <p className="text-sm font-semibold text-white">
+                  Sexto Sistema · MMPI-2
+                </p>
+                <p className="text-xs text-zinc-500">
+                  Plataforma profesional de evaluación psicológica
+                </p>
+              </div>
+            </div>
+            <div className="flex items-center gap-6 text-xs text-zinc-500">
+              <a href="https://www.sextoSistema.com" target="_blank" rel="noopener noreferrer" className="hover:text-cyan-400 transition-colors">
+                sextoSistema.com
+              </a>
+              <span>© 2026 Sexto Sistema</span>
+            </div>
+          </div>
+          <p className="text-xs text-zinc-600 mt-4 text-center md:text-left">
+            Este informe fue elaborado con base en los puntajes T y puntajes brutos del archivo MMPI-2 proporcionado,
+            interpretados conforme a los criterios de Sanz (Guía MMPI-2, 2008), Graham, Butcher y colaboradores.
+            La interpretación automatizada no reemplaza el juicio clínico integrado.
+          </p>
+        </div>
+      </footer>
 
     </div>
   )
