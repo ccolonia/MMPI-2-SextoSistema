@@ -10,6 +10,119 @@ datasource db {
   url       = env("DATABASE_URL")
 }
 
+// === SISTEMA DE USUARIOS (FASE 2) ===
+
+// Profesional psicólogo/a que usa la plataforma
+model Profesional {
+  id            String   @id @default(cuid())
+  email         String   @unique
+  passwordHash  String   // bcrypt hash
+  nombre        String   // Nombre completo
+  apellido      String?
+  matricula     String?  // Matrícula profesional (MP-XXXX)
+  telefono      String?
+  institucion   String?  // Institución/consultorio
+  especialidad  String?  // Especialidad (clínica, forense, laboral, etc.)
+
+  // Plan de suscripción
+  plan          Plan     @default(FREE)
+  planFechaInicio DateTime? @default(now())
+  planFechaFin  DateTime?
+
+  // Estado de la cuenta
+  emailVerificado Boolean @default(false)
+  activo        Boolean   @default(true)
+  rol           Rol      @default(PROFESIONAL)
+
+  // Relaciones
+  pacientes     Paciente[]
+  informes      InformeMMPI2[]
+  evaluaciones  Evaluacion[]
+
+  // Metadatos
+  ultimoLogin   DateTime?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+enum Plan {
+  FREE        // 5 evaluaciones/mes
+  PRO         // Evaluaciones ilimitadas
+  INSTITUCIONAL // Multi-profesional
+}
+
+enum Rol {
+  ADMIN
+  PROFESIONAL
+}
+
+// Paciente/Evaluado - pertenece a un profesional
+model Paciente {
+  id            String   @id @default(cuid())
+  profesionalId String
+  profesional   Profesional @relation(fields: [profesionalId], references: [id], onDelete: Cascade)
+
+  // Datos personales
+  nombre        String
+  apellido      String?
+  dni           String?   // DNI
+  fechaNacimiento DateTime?
+  sexo          String?   // "masculino" | "femenino"
+  telefono      String?
+  email         String?
+  direccion     String?
+
+  // Datos clínicos
+  ocupacion     String?
+  nivelEducativo String?
+  motivoConsulta String?
+  antecedentes  String?   // Texto libre
+
+  // Relaciones
+  evaluaciones  Evaluacion[]
+
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([profesionalId])
+}
+
+// Evaluación genérica (multi-instrumento)
+// Por ahora solo MMPI-2, pero preparado para Bender, HTP, etc.
+model Evaluacion {
+  id            String   @id @default(cuid())
+  profesionalId String
+  profesional   Profesional @relation(fields: [profesionalId], references: [id], onDelete: Cascade)
+  pacienteId    String?
+  paciente      Paciente? @relation(fields: [pacienteId], references: [id], onDelete: SetNull)
+
+  // Tipo de instrumento
+  instrumento   String   // "MMPI2", "BENDER", "HTP", "RORSCHACH", etc.
+  fecha         DateTime @default(now())
+  estado        String   @default("iniciada") // "iniciada", "completada", "informada"
+
+  // Datos específicos del instrumento (JSON)
+  datosBrutos   Json?    // Puntajes brutos
+  datosT        Json?    // Puntajes T
+  analisisResultado Json? // Resultado del análisis completo
+
+  // Informe generado
+  informePath   String?  // Path al PDF generado
+
+  // Relación con InformeMMPI2 (legacy, para mantener compatibilidad)
+  informeMMPI2Id String?
+  informeMMPI2   InformeMMPI2? @relation(fields: [informeMMPI2Id], references: [id], onDelete: SetNull)
+
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([profesionalId])
+  @@index([pacienteId])
+  @@index([instrumento])
+}
+
+// === MODELOS EXISTENTES (MMPI-2) ===
+
 // Pregunta del cuestionario MMPI-2
 model PreguntaMMPI2 {
   id          Int      @id @default(autoincrement())
@@ -312,6 +425,10 @@ model PuntajeT {
 model InformeMMPI2 {
   id                String   @id @default(cuid())
 
+  // Multi-tenancy: profesional que creó el informe
+  profesionalId     String?
+  profesional       Profesional? @relation(fields: [profesionalId], references: [id], onDelete: SetNull)
+
   // Datos del evaluado
   nombreEvaluado    String?
   edad              Int?
@@ -355,6 +472,11 @@ model InformeMMPI2 {
   // Metadatos
   notas             String?  // Notas adicionales del evaluador
 
+  // Relación con Evaluacion (nueva arquitectura multi-instrumento)
+  evaluaciones      Evaluacion[]
+
   createdAt         DateTime @default(now())
   updatedAt         DateTime @updatedAt
+
+  @@index([profesionalId])
 }
