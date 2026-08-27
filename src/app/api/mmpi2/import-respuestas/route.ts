@@ -83,8 +83,11 @@ export async function POST(request: NextRequest) {
 
         if (esFormatoBinario) {
           // Formato binario: Col 0 = V (1=sí), Col 1 = F (1=sí)
-          const vVal = Number(row[0]) || 0;
-          const fVal = Number(row[1]) || 0;
+          // Las celdas vacías son null/undefined, NO 0
+          const vRaw = row[0];
+          const fRaw = row[1];
+          const vVal = (vRaw === 1 || vRaw === '1' || vRaw === true) ? 1 : 0;
+          const fVal = (fRaw === 1 || fRaw === '1' || fRaw === true) ? 1 : 0;
 
           if (vVal === 1 && fVal !== 1) {
             valor = true;
