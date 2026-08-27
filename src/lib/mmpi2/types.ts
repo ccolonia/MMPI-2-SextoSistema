@@ -175,6 +175,7 @@ export interface MMPI2AnalysisResult {
     validezProtocolo: string;
     perfilPersonalidad: string;
     estiloDefensivo: string;
+    rasgosNucleares: string[];
     areasAfectadas: {
       cognitivo: string;
       afectivo: string;

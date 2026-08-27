@@ -216,8 +216,36 @@ export function analizarValidez(protocol: MMPI2Protocol): ValidityAnalysis {
     conclusionGeneral = 'valido_reservas';
     justificacionValidez = `El protocolo es VÁLIDO CON RESERVAS. Se detectaron: ${problemasValidez.join(', ')}. Interpretar con cautela y considerar estas limitaciones.`;
   } else {
-    conclusionGeneral = 'valido';
-    justificacionValidez = 'El protocolo es VÁLIDO. Las escalas de validez indican una respuesta consistente y veraz del evaluado. Se puede proceder con la interpretación clínica.';
+    // Verificar si hay patrón defensivo para incluirlo en la conclusión de validez
+    const lElevadaDef = protocol.lBruto >= 7;
+    const fKNegativoDef = protocol.f_K < 0;
+    const kElevadoDef = protocol.kBruto >= 15;
+
+    if (lElevadaDef && fKNegativoDef) {
+      // Documentar estilo defensivo en la conclusión de validez
+      let ratiosDef = '';
+      if (protocol.obviedadSutilidad) {
+        let defCount = 0;
+        let totalCount = 0;
+        for (const esc of ['D', 'Hy', 'Pd', 'Pa', 'Ma'] as const) {
+          const r = protocol.obviedadSutilidad[esc];
+          if (r) {
+            totalCount++;
+            const total = r.obvio + r.sutil;
+            if (total > 0 && r.obvio / total < 0.45) defCount++;
+          }
+        }
+        if (totalCount > 0) {
+          ratiosDef = ` Los ratios Obviedad/Sutilidad confirman el patrón defensivo (${defCount}/${totalCount} escalas con ratio < 0.45).`;
+        }
+      }
+
+      conclusionGeneral = 'valido';
+      justificacionValidez = `El protocolo es ACEPTABLE para interpretación. Se documenta un ESTILO DE RESPUESTA DEFENSIVO: L elevada (bruto=${protocol.lBruto}, T≈65), F-K=${protocol.f_K} (negativo, descarta simulación), K=${protocol.kBruto} (${kElevadoDef ? 'elevada, refuerza defensividad' : 'normal'}).${ratiosDef} Los puntajes clínicos deben considerarse como PISOS, no techos: la psicopatología real probablemente es mayor que la observada.`;
+    } else {
+      conclusionGeneral = 'valido';
+      justificacionValidez = 'El protocolo es VÁLIDO. Las escalas de validez indican una respuesta consistente y veraz del evaluado. Se puede proceder con la interpretación clínica.';
+    }
   }
 
   return {
@@ -891,10 +919,54 @@ CONCLUSIÓN: El protocolo es aceptable para interpretación, pero los puntajes c
     }
   }
 
+  // === RASGOS NUCLEARES DE PERSONALIDAD ===
+  // Síntesis narrativa que conecta escalas, como en el informe de referencia
+  const rasgosNucleares: string[] = [];
+
+  // 1. Suspicacia y control interpersonal (Pa1 + BIZ + O-H)
+  const pa1T = protocol.subescalasHarrisLingoes?.Pa1 ? Math.min(120, 50 + protocol.subescalasHarrisLingoes.Pa1 * 3) : 0;
+  const bizT = protocol.escalasContenido?.BIZ || 0;
+  const ohT = protocol.escalasSuplementarias?.OH || 0;
+  if (pa1T >= 60 || (bizT >= 60 && ohT >= 55)) {
+    rasgosNucleares.push(`Tendencia a la suspicacia y el control interpersonal: La elevación de Pa1 (T=${pa1T || 'N/A'}), en combinación con BIZ (T=${bizT}) y O-H (T=${ohT}), configura un patrón en el que el evaluado tiende a mantenerse alerta respecto a las intenciones de otros, controla activamente sus expresiones emocionales y puede interpretar situaciones ambiguas con un sesgo hacia la desconfianza. Esta suspicacia no alcanza rango paranoide clínico pero representa un rasgo de carácter relevante para el funcionamiento interpersonal.`);
+  }
+
+  // 2. Autoimagen expansiva con baja asertividad (Ma4 + Do)
+  const ma4T = protocol.subescalasHarrisLingoes?.Ma4 ? Math.min(120, 50 + protocol.subescalasHarrisLingoes.Ma4 * 3) : 0;
+  const doT = protocol.escalasSuplementarias?.Do || 0;
+  if (ma4T >= 65 && doT < 45) {
+    rasgosNucleares.push(`Autoimagen expansiva con baja asertividad conductual: La combinación de Ma4 elevado (T=${ma4T}) y Do bajo (T=${doT}) es llamativa. El evaluado se percibe a sí mismo como especialmente importante o capaz, pero no traduce esa autoimagen en conductas asertivas o de liderazgo efectivo. Puede existir una brecha entre la imagen interna idealizada y el funcionamiento interpersonal real, con posible frustración cuando el entorno no valida esa autoevaluación.`);
+  }
+
+  // 3. Rigidez cognitiva y obsesividad (OBS + L elevada)
+  const obsT = protocol.escalasContenido?.OBS || 0;
+  if (obsT >= 60 || lElevada) {
+    rasgosNucleares.push(`Rigidez cognitiva y obsesividad moderada: OBS (T=${obsT})${lElevada ? ' complementada por el convencionalismo que refleja L elevada' : ''}. El evaluado tiende a procesar la información de manera rígida, con dificultad para tolerar la ambigüedad y cierta tendencia a la rumiación y a la dificultad para tomar decisiones en situaciones novedosas.`);
+  }
+
+  // 4. Ansiedad reconocida sin cuadro depresivo (ANX + DEP bajo)
+  const anxT = protocol.escalasContenido?.ANX || 0;
+  const depT = protocol.escalasContenido?.DEP || 0;
+  if (anxT >= 60 && depT < 55) {
+    rasgosNucleares.push(`Ansiedad reconocida sin cuadro depresivo: ANX (T=${anxT}) indica un nivel moderado de tensión psicológica reconocida por el evaluado, sin que esto se acompañe de un cuadro depresivo propiamente dicho (DEP T=${depT}). El malestar se expresa más como preocupación y tensión que como tristeza o inhibición psicomotriz.`);
+  }
+
+  // 5. Fortaleza del yo reducida
+  const esT = protocol.escalasSuplementarias?.Es || 0;
+  if (esT > 0 && esT < 45) {
+    rasgosNucleares.push(`Fortaleza del yo reducida: Es (T=${esT}) sugiere que los recursos psicológicos internos para la regulación emocional y el afrontamiento ante el estrés son algo limitados. Ante situaciones adversas sostenidas, el evaluado podría mostrar menor resiliencia que la población general.`);
+  }
+
+  // 6. Control excesivo de hostilidad
+  if (ohT >= 55) {
+    rasgosNucleares.push(`Control excesivo de la hostilidad: O-H (T=${ohT}) sugiere acumulación de irritación o resentimiento sin expresión directa. El evaluado puede reprimir reacciones hostiles con el riesgo de descargas ocasionales desproporcionadas ante estresores acumulados.`);
+  }
+
   return {
     validezProtocolo,
     perfilPersonalidad,
     estiloDefensivo,
+    rasgosNucleares,
     areasAfectadas,
     recursosFortalezas,
     riesgos,
@@ -1044,10 +1116,89 @@ export function analizarHarrisLingoes(protocol: MMPI2Protocol) {
 }
 
 function obtenerInterpretacionHarrisLingoes(codigo: string, t: number): string {
-  if (t >= 65) return `Elevación significativa (T=${t}). Indica presencia marcada de las características medidas por ${NOMBRES_HARRIS_LINGOES[codigo] || codigo}.`;
-  if (t >= 60) return `Elevación leve (T=${t}). Indica presencia moderada de ${NOMBRES_HARRIS_LINGOES[codigo] || codigo}.`;
-  if (t >= 40) return `Rango normal (T=${t}).`;
-  return `Puntaje bajo (T=${t}). Puede indicar ausencia o tendencia opuesta a ${NOMBRES_HARRIS_LINGOES[codigo] || codigo}.`;
+  // Interpretaciones clínicas específicas por subescala (criterio en el código)
+  const interpretaciones: Record<string, (t: number) => string> = {
+    D1: (t) => t >= 65 ? `Elevación significativa (T=${t}). Depresión subjetiva marcada: desánimo, desesperanza, autorrechazo.` :
+                  t >= 55 ? `Leve (T=${t}). Algunos rasgos de depresión subjetiva.` :
+                  t <= 40 ? `Bajo (T=${t}). Ausencia de depresión subjetiva.` : `Normal (T=${t}).`,
+    D2: (t) => t >= 65 ? `Elevación significativa (T=${t}). Retardo psicomotor: lentitud, falta de energía.` :
+                  t >= 55 ? `Leve (T=${t}). Cierta lentitud o falta de energía.` :
+                  t <= 43 ? `Bajo (T=${t}). Nivel de energía y actividad motora preservados.` : `Normal (T=${t}).`,
+    D3: (t) => t >= 65 ? `Elevación significativa (T=${t}). Mal funcionamiento físico: quejas de agotamiento o lentitud corporal.` :
+                  t >= 55 ? `Leve (T=${t}). Posible percepción de lentitud o agotamiento.` : `Normal (T=${t}).`,
+    D4: (t) => t >= 65 ? `Elevación significativa (T=${t}). Insensibilidad mental: desconexión o embotamiento afectivo.` :
+                  t >= 55 ? `Leve (T=${t}). Cierta desconexión mental.` : `Normal (T=${t}).`,
+    D5: (t) => t >= 65 ? `Elevación significativa (T=${t}). Barrera de pensamiento: rumiación y bloqueo.` :
+                  t >= 55 ? `Leve (T=${t}). Tendencia a la rumiación.` : `Normal (T=${t}).`,
+    Hy1: (t) => t >= 65 ? `Elevación significativa (T=${t}). Negación marcada de ansiedad social.` :
+                  t >= 55 ? `Leve (T=${t}). Cierta negación de ansiedad.` : `Normal (T=${t}).`,
+    Hy2: (t) => t >= 65 ? `Elevación significativa (T=${t}). Necesidad intensa de afecto y aprobación.` :
+                  t >= 55 ? `Leve (T=${t}). Cierta necesidad de afecto.` : `Normal (T=${t}).`,
+    Hy3: (t) => t >= 65 ? `Elevación significativa (T=${t}). Labilidad e inseguridad emocional marcadas.` :
+                  t >= 55 ? `Leve (T=${t}). Cierta labilidad emocional.` : `Normal (T=${t}).`,
+    Hy4: (t) => t >= 65 ? `Elevación significativa (T=${t}). Quejas somáticas prominentes como expresión de conflictos.` :
+                  t >= 60 ? `Leve (T=${t}). Cierta percepción de no ser comprendido por otros.` :
+                  t >= 55 ? `Leve (T=${t}). Cierta enajenación o somatización.` : `Normal (T=${t}).`,
+    Hy5: (t) => t >= 65 ? `Elevación significativa (T=${t}). Inhibición marcada de agresión.` :
+                  t >= 55 ? `Leve (T=${t}). Cierta inhibición de agresión.` : `Normal (T=${t}).`,
+    Pd1: (t) => t >= 65 ? `Elevación significativa (T=${t}). Discordia familiar marcada.` :
+                  t >= 55 ? `Leve (T=${t}). Algunos conflictos familiares.` :
+                  t <= 40 ? `Bajo (T=${t}). Percepción positiva del ambiente familiar.` : `Normal (T=${t}).`,
+    Pd2: (t) => t >= 65 ? `Elevación significativa (T=${t}). Problemas marcados con la autoridad.` :
+                  t >= 55 ? `Leve (T=${t}). Algunos conflictos con autoridad.` : `Normal (T=${t}).`,
+    Pd3: (t) => t >= 65 ? `Elevación significativa (T=${t}). Asocialidad marcada.` :
+                  t >= 55 ? `Leve (T=${t}). Cierta apartamiento social.` :
+                  t <= 40 ? `Bajo (T=${t}). Buen respeto social.` : `Normal (T=${t}).`,
+    Pd4: (t) => t >= 65 ? `Elevación significativa (T=${t}). Alienación social marcada.` :
+                  t >= 55 ? `Leve (T=${t}). Cierta alienación social.` : `Normal (T=${t}).`,
+    Pd5: (t) => t >= 65 ? `Elevación significativa (T=${t}). Alienación del self marcada.` :
+                  t >= 55 ? `Leve (T=${t}). Cierta alienación del self.` : `Normal (T=${t}).`,
+    Pa1: (t) => t >= 65 ? `AL LÍMITE CLÍNICO (T=${t}). Suspicacia marcada: sensación de ser observado, vigilado o juzgado injustamente. Tendencia a interpretar acciones ajenas como hostiles.` :
+                  t >= 60 ? `PRÓXIMO AL LÍMITE (T=${t}). Suspicacia interpersonal: tendencia a sentirse observado o mal interpretado por otros. Relevante clínicamente.` :
+                  t >= 55 ? `Leve (T=${t}). Cierta suspicacia interpersonal.` :
+                  t <= 40 ? `Bajo (T=${t}). Sin hipersensibilidad ni suspicacia.` : `Normal (T=${t}).`,
+    Pa2: (t) => t >= 65 ? `Elevación significativa (T=${t}). Hipersensibilidad e idealismo marcados.` :
+                  t >= 55 ? `Leve (T=${t}). Cierta susceptibilidad.` :
+                  t <= 40 ? `Bajo (T=${t}). Sin hipersensibilidad ni idealismo excesivo.` : `Normal (T=${t}).`,
+    Pa3: (t) => t >= 65 ? `Elevación significativa (T=${t}). Ingenuidad marcada, confianza excesiva.` :
+                  t >= 55 ? `Leve (T=${t}). Cierta ingenuidad.` : `Normal (T=${t}).`,
+    Sc1: (t) => t >= 65 ? `Elevación significativa (T=${t}). Alienación social marcada, aislamiento.` :
+                  t >= 55 ? `Leve (T=${t}). Cierta enajenación social.` : `Normal-leve (T=${t}).`,
+    Sc2: (t) => t >= 65 ? `Elevación significativa (T=${t}). Alienación bizarra, pensamiento idiosincrático.` :
+                  t >= 55 ? `Leve (T=${t}). Cierta alienación bizarra.` : `Normal (T=${t}).`,
+    Sc3: (t) => t >= 65 ? `Elevación significativa (T=${t}). Falta marcada de energía y pobreza ideativa.` :
+                  t >= 55 ? `Leve (T=${t}). Cierta falta de energía.` : `Normal (T=${t}).`,
+    Sc4: (t) => t >= 65 ? `Elevación significativa (T=${t}). Falta marcada de orientación al objetivo.` :
+                  t >= 55 ? `Leve (T=${t}). Cierta falta de orientación.` : `Normal (T=${t}).`,
+    Sc5: (t) => t >= 65 ? `Elevación significativa (T=${t}). Excesos sensoriales marcados.` :
+                  t >= 55 ? `Leve (T=${t}). Ciertos excesos sensoriales.` : `Normal (T=${t}).`,
+    Sc6: (t) => t >= 65 ? `Elevación significativa (T=${t}). Conducta bizarre marcada.` :
+                  t >= 55 ? `Leve (T=${t}). Cierta conducta bizarre.` : `Normal (T=${t}).`,
+    Ma1: (t) => t >= 65 ? `Elevación significativa (T=${t}). Cinismo marcado.` :
+                  t >= 55 ? `Leve (T=${t}). Cierta actitud cínica.` : `Normal (T=${t}).`,
+    Ma2: (t) => t >= 65 ? `Elevación significativa (T=${t}). Actuación psicopática marcada.` :
+                  t >= 55 ? `Leve (T=${t}). Cierta actuación psicopática.` : `Normal (T=${t}).`,
+    Ma3: (t) => t >= 65 ? `Elevación significativa (T=${t}). Imperturbabilidad marcada.` :
+                  t >= 55 ? `Leve (T=${t}). Cierta imperturbabilidad.` : `Normal (T=${t}).`,
+    Ma4: (t) => t >= 65 ? `ELEVADA (T=${t}). Autoimagen expansiva: el evaluado se percibe como especialmente importante, capaz o con derechos especiales. Puede haber tendencia a la grandiosidad en la autoevaluación.` :
+                  t >= 60 ? `Leve (T=${t}). Cierta inflación del ego.` :
+                  t >= 55 ? `Leve (T=${t}). Cierta autoimagen expansiva.` : `Normal (T=${t}).`,
+    Si1: (t) => t >= 65 ? `Elevación significativa (T=${t}). Timidez social marcada.` :
+                  t >= 55 ? `Leve (T=${t}). Cierta timidez social.` : `Normal (T=${t}).`,
+    Si2: (t) => t >= 65 ? `Elevación significativa (T=${t}). Evitación social marcada.` :
+                  t >= 55 ? `Leve (T=${t}). Cierta evitación social.` : `Normal (T=${t}).`,
+    Si3: (t) => t >= 65 ? `Elevación significativa (T=${t}). Alienación del self marcada.` :
+                  t >= 55 ? `Leve (T=${t}). Cierta alienación del self.` : `Normal (T=${t}).`,
+  };
+
+  const fn = interpretaciones[codigo];
+  if (fn) return fn(t);
+
+  // Fallback genérico
+  if (t >= 65) return `Elevación significativa (T=${t}). Presencia marcada de ${NOMBRES_HARRIS_LINGOES[codigo] || codigo}.`;
+  if (t >= 60) return `Leve (T=${t}). Presencia moderada de ${NOMBRES_HARRIS_LINGOES[codigo] || codigo}.`;
+  if (t >= 40) return `Normal (T=${t}).`;
+  return `Bajo (T=${t}).`;
 }
 
 // === RAZONES OBVIEDAD-SUTILIDAD ===

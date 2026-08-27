@@ -153,6 +153,7 @@ interface AnalysisResult {
   formulacionClinica: {
     validezProtocolo: string; perfilPersonalidad: string
     estiloDefensivo: string
+    rasgosNucleares: string[]
     areasAfectadas: {
       cognitivo: string; afectivo: string; conductual: string
       interpersonal: string; somatico: string
@@ -2044,9 +2045,21 @@ export default function Home() {
                       <p className="text-slate-700">{analysisResult.formulacionClinica.validezProtocolo}</p>
                     </div>
                     {analysisResult.formulacionClinica.estiloDefensivo && (
-                      <div className="p-4 rounded-lg border-l-4 border-purple-500 bg-purple-50 dark:bg-purple-900/20">
-                        <h4 className="font-semibold text-lg mb-2 text-purple-700 dark:text-purple-300">⚠️ Estilo Defensivo</h4>
-                        <p className="text-slate-700 whitespace-pre-line">{analysisResult.formulacionClinica.estiloDefensivo}</p>
+                      <div className="p-4 rounded-lg border-l-4 border-[#85A28B] bg-[#DDE9DB]/50">
+                        <h4 className="font-semibold text-lg mb-2 text-[#4F6F52]">⚠️ Estilo Defensivo</h4>
+                        <p className="text-[#121E14] whitespace-pre-line">{analysisResult.formulacionClinica.estiloDefensivo}</p>
+                      </div>
+                    )}
+                    {analysisResult.formulacionClinica.rasgosNucleares && analysisResult.formulacionClinica.rasgosNucleares.length > 0 && (
+                      <div>
+                        <h4 className="font-semibold text-lg mb-3 text-[#4F6F52]">Rasgos Nucleares de Personalidad</h4>
+                        <div className="space-y-3">
+                          {analysisResult.formulacionClinica.rasgosNucleares.map((rasgo, i) => (
+                            <div key={i} className="p-3 rounded-lg bg-[#F5F1E8] border border-[#85A28B]/20">
+                              <p className="text-sm text-[#121E14]">{rasgo}</p>
+                            </div>
+                          ))}
+                        </div>
                       </div>
                     )}
                     <div>
