@@ -661,17 +661,26 @@ export function generarFormulacionClinica(
   // Validez del protocolo
   const validezProtocolo = validez.justificacionValidez;
 
-  // === ESTILO DEFENSIVO ===
-  // Detectar patrón defensivo: L elevada + ratios O/S bajos + F-K negativo
+  // === ESTILO DEFENSIVO (CRITERIO EN EL CÓDIGO, NO EN EL PROMPT) ===
+  // El análisis defensivo se basa en indicadores SIEMPRE presentes (L, K, F-K)
+  // y se enriquece con O/S ratios si están disponibles.
   let estiloDefensivo = '';
-  const lT = protocol.lBruto;
-  const kT = protocol.kBruto;
+  const lBruto = protocol.lBruto;
+  const kBruto = protocol.kBruto;
   const fK = protocol.f_K;
   const razonesOS = protocol.obviedadSutilidad;
 
-  // Contar cuántas razones O/S son defensivas (ratio < 0.45)
+  // L bruto >= 7 → T >= 65 (punto de corte clínico para defensividad)
+  const lElevada = lBruto >= 7;
+  // F-K negativo indica orientación defensiva (no simulación)
+  const fKNegativo = fK < 0;
+  // K elevado (>= 15) refuerza defensividad
+  const kElevado = kBruto >= 15;
+
+  // Contar razones O/S defensivas si están disponibles
   let razonesDefensivas = 0;
   let totalRazones = 0;
+  let detallesOS = '';
   if (razonesOS) {
     for (const escala of ['D', 'Hy', 'Pd', 'Pa', 'Ma'] as const) {
       const r = razonesOS[escala];
@@ -682,29 +691,28 @@ export function generarFormulacionClinica(
         if (ratio < 0.45) razonesDefensivas++;
       }
     }
+    if (totalRazones > 0) {
+      detallesOS = `\n3. Razones Obviedad/Sutilidad: ${razonesDefensivas} de ${totalRazones} escalas presentan ratios O/S bajos (< 0.45), confirmando que el evaluado niega síntomas cuando estos son claramente reconocibles (ítems obvios) pero responde con más libertad ante ítems cuya implicación clínica no resulta evidente (sutiles).`;
+    }
   }
 
-  // L bruto > 7 (T >= 65) + F-K negativo + mayoría de ratios O/S bajos
-  const lElevada = lT >= 7;  // L bruto >= 7 → T >= 65
-  const fKNegativo = fK < 0;
-  const mayoriaRazonesDefensivas = totalRazones > 0 && razonesDefensivas >= Math.ceil(totalRazones * 0.6);
+  // Determinar nivel de defensividad
+  // CRITERIO: L elevada + F-K negativo = estilo defensivo documentado
+  // (no requiere O/S ratios porque L y F-K son suficientes por sí solos)
+  if (lElevada && fKNegativo) {
+    estiloDefensivo = `ESTILO DEFENSIVO DOCUMENTADO: El evaluado presenta un patrón defensivo sistemático, evidenciado por múltiples indicadores convergentes:
 
-  if (lElevada && fKNegativo && mayoriaRazonesDefensivas) {
-    estiloDefensivo = `ESTILO DEFENSIVO DOCUMENTADO: El evaluado presenta un patrón defensivo sistemático y consistente, evidenciado por múltiples indicadores convergentes:
+1. Escala L elevada (L bruto=${lBruto}, T≈65): Tendencia a presentarse de manera excesivamente virtuosa y moralmente intachable, negando pequeños fallos humanos que prácticamente todo el mundo reconoce. El evaluado se muestra bajo una luz muy favorable, con una autoimagen rígidamente positiva. Esto puede reflejar tanto defensividad situacional (contexto de evaluación con terceros en juego) como rasgos de personalidad más permanentes vinculados al convencionalismo y la rigidez moral.
 
-1. Escala L elevada (L bruto=${lT}, T≈65): Tendencia a presentarse de manera excesivamente virtuosa y moralmente intachable, negando pequeños fallos humanos que prácticamente todo el mundo reconoce. El evaluado se muestra bajo una luz muy favorable, con una autoimagen rígidamente positiva.
+2. Índice F-K = ${fK} (negativo): Valor claramente negativo que indica AUSENCIA de simulación de trastorno psicopatológico. Descarta exageración sintomática y confirma orientación defensiva. El evaluado minimiza la reportación de síntomas.${detallesOS}
 
-2. Índice F-K = ${fK} (negativo): Valor claramente negativo que indica AUSENCIA de simulación de trastorno psicopatológico. Descarta exageración sintomática y confirma orientación defensiva.
-
-3. Razones Obviedad/Sutilidad: ${razonesDefensivas} de ${totalRazones} escalas presentan ratios O/S bajos (< 0.45), confirmando que el evaluado niega síntomas cuando estos son claramente reconocibles (ítems obvios) pero responde con más libertad ante ítems cuya implicación clínica no resulta evidente (sutiles).
-
-4. K bruto=${kT}: ${kT >= 15 ? 'Elevada, refuerza el patrón defensivo' : 'En rango promedio, no añade defensividad adicional'}.
+${totalRazones > 0 ? '4' : '3'}. K bruto=${kBruto}: ${kElevado ? 'Elevado, refuerza el patrón defensivo. El evaluado tiende a minimizar dificultades psicológicas.' : 'En rango promedio, no añade defensividad adicional más allá de lo que refleja L.'}.
 
 CONCLUSIÓN: El protocolo es aceptable para interpretación, pero los puntajes clínicos probablemente SUBESTIMAN la psicopatología real del evaluado. Las conclusiones clínicas deben leerse como PISOS, no como techos. En contexto forense con terceros en juego, este patrón defensivo cobra especial relevancia interpretativa y debe ser explicitado en el informe profesional.`;
-  } else if (lElevada || fKNegativo || mayoriaRazonesDefensivas) {
-    estiloDefensivo = `Patrón defensivo parcial: Se detectan algunos indicadores de defensividad (L=${lT}, F-K=${fK}, razones O/S defensivas=${razonesDefensivas}/${totalRazones}), aunque no configuran un patrón sistemático. Interpretar los resultados con cautela.`;
+  } else if (lElevada || fKNegativo || kElevado) {
+    estiloDefensivo = `Patrón defensivo parcial: Se detectan algunos indicadores de defensividad (L bruto=${lBruto}, F-K=${fK}, K bruto=${kBruto}), aunque no configuran un patrón sistemático. Interpretar los resultados con cautela.${detallesOS}`;
   } else {
-    estiloDefensivo = 'No se detecta patrón defensivo significativo. Las escalas de validez (L, K, F-K) y razones Obviedad/Sutilidad se encuentran dentro de parámetros normativos.';
+    estiloDefensivo = 'No se detecta patrón defensivo significativo. Las escalas de validez (L, K, F-K) se encuentran dentro de parámetros normativos.';
   }
 
   // Perfil de personalidad
@@ -793,31 +801,94 @@ CONCLUSIÓN: El protocolo es aceptable para interpretación, pero los puntajes c
     pronostico = 'Dado el perfil dentro de parámetros normativos, se espera buen funcionamiento con intervenciones preventivas o de apoyo.';
   }
 
-  // Recomendaciones terapéuticas
+  // Recomendaciones terapéuticas ANCLADAS AL PERFIL ESPECÍFICO
   const recomendacionesTerapeuticas: string[] = [];
-  
+
+  // 1. Recomendaciones por validez
   if (validez.conclusionGeneral === 'valido_reservas') {
-    recomendacionesTerapeuticas.push('Considerar las limitaciones de validez del protocolo en la interpretación');
+    recomendacionesTerapeuticas.push('Interpretar los resultados con cautela debido a las limitaciones de validez del protocolo');
   }
-  
+
+  // 2. Recomendaciones por estilo defensivo
+  if (lElevada && fKNegativo) {
+    recomendacionesTerapeuticas.push('Triangular los hallazgos con entrevista clínica y fuentes colaterales, especialmente en contexto forense donde la motivación para la presentación favorable es elevada');
+    recomendacionesTerapeuticas.push('Considerar reevaluación en contexto de menor presión defensiva para obtener un perfil más representativo');
+  }
+
+  // 3. Recomendaciones por escalas clínicas elevadas
   if (depresion && depresion.puntajeT >= 65) {
-    recomendacionesTerapeuticas.push('Abordaje psicoterapéutico con enfoque en estado de ánimo depresivo');
+    recomendacionesTerapeuticas.push('Abordaje psicoterapéutico con enfoque en estado de ánimo depresivo (D T=' + depresion.puntajeT + ')');
     recomendacionesTerapeuticas.push('Considerar evaluación para tratamiento psicofarmacológico');
   }
-  
+
   if (pd && pd.puntajeT >= 65) {
-    recomendacionesTerapeuticas.push('Establecer límites claros en el setting terapéutico');
+    recomendacionesTerapeuticas.push('Establecer límites claros en el setting terapéutico (Pd T=' + pd.puntajeT + ')');
     recomendacionesTerapeuticas.push('Evaluar conductas de riesgo y problemas legales');
   }
-  
-  if (escalasClinicas.find(e => e.codigo === 'Pa')?.puntajeT && escalasClinicas.find(e => e.codigo === 'Pa')!.puntajeT >= 65) {
-    recomendacionesTerapeuticas.push('Dedicar tiempo a construir alianza terapéutica sólida');
+
+  const pa = escalasClinicas.find(e => e.codigo === 'Pa');
+  if (pa && pa.puntajeT >= 65) {
+    recomendacionesTerapeuticas.push('Dedicar tiempo a construir alianza terapéutica sólida (Pa T=' + pa.puntajeT + ')');
     recomendacionesTerapeuticas.push('Evitar confrontaciones directas que puedan activar suspicacia');
   }
 
+  // 4. Recomendaciones por subescalas Harris-Lingoes relevantes
+  if (protocol.subescalasHarrisLingoes) {
+    const pa1 = protocol.subescalasHarrisLingoes.Pa1;
+    if (pa1 && pa1 >= 4) { // Pa1 bruto >= 4 → T aprox >= 60
+      recomendacionesTerapeuticas.push('Explorar experiencias de suspicacia interpersonal o sensación de injusticia (Pa1 elevada)');
+    }
+    const ma4 = protocol.subescalasHarrisLingoes.Ma4;
+    if (ma4 && ma4 >= 5) { // Ma4 bruto >= 5 → T aprox >= 65
+      recomendacionesTerapeuticas.push('Explorar autoimagen grandiosa y su impacto en el funcionamiento interpersonal (Ma4 elevada)');
+    }
+  }
+
+  // 5. Recomendaciones por escalas de contenido
+  if (protocol.escalasContenido) {
+    const obs = protocol.escalasContenido.OBS;
+    if (obs && obs >= 60) {
+      recomendacionesTerapeuticas.push('Abordar rigidez cognitiva y tendencia a la rumiación (OBS T=' + obs + ')');
+    }
+    const anx = protocol.escalasContenido.ANX;
+    if (anx && anx >= 60) {
+      recomendacionesTerapeuticas.push('Técnicas de manejo de ansiedad y mindfulness (ANX T=' + anx + ')');
+    }
+    const biz = protocol.escalasContenido.BIZ;
+    if (biz && biz >= 60) {
+      recomendacionesTerapeuticas.push('Explorar experiencias perceptuales inusuales o pensamiento de características peculiares (BIZ T=' + biz + ')');
+    }
+    const wrk = protocol.escalasContenido.WRK;
+    if (wrk && wrk >= 55) {
+      recomendacionesTerapeuticas.push('Abordar dificultades en el rendimiento laboral o académico (WRK T=' + wrk + ')');
+    }
+  }
+
+  // 6. Recomendaciones por escalas suplementarias
+  if (protocol.escalasSuplementarias) {
+    const es = protocol.escalasSuplementarias.Es;
+    if (es && es < 45) {
+      recomendacionesTerapeuticas.push('Fortalecer recursos de afrontamiento y resiliencia ante el estrés (Es T=' + es + ')');
+    }
+    const oh = protocol.escalasSuplementarias.OH;
+    if (oh && oh >= 55) {
+      recomendacionesTerapeuticas.push('Explorar patrones de control de hostilidad y riesgo de descargas emocionales (O-H T=' + oh + ')');
+    }
+    const doT = protocol.escalasSuplementarias.Do;
+    if (doT && doT < 40) {
+      recomendacionesTerapeuticas.push('Considerar entrenamiento en habilidades asertivas y de liderazgo (Do T=' + doT + ')');
+    }
+  }
+
+  // 7. Si no hay recomendaciones específicas, dar recomendaciones generales ancladas
   if (recomendacionesTerapeuticas.length === 0) {
-    recomendacionesTerapeuticas.push('Seguimiento psicológico periódico');
-    recomendacionesTerapeuticas.push('Intervenciones de apoyo y fortalecimiento de recursos');
+    if (codigoPerfil?.definicion === 'dln') {
+      recomendacionesTerapeuticas.push('Perfil dentro de límites normativos: seguimiento psicológico periódico y monitoreo de factores de riesgo');
+      recomendacionesTerapeuticas.push('Considerar evaluación con instrumentos complementarios para profundizar el análisis cualitativo');
+    } else {
+      recomendacionesTerapeuticas.push('Seguimiento psicológico periódico');
+      recomendacionesTerapeuticas.push('Intervenciones de apoyo y fortalecimiento de recursos');
+    }
   }
 
   return {
