@@ -207,8 +207,15 @@ export async function generateMMPI2PDF(data: InformeData): Promise<Blob> {
   if (conclusion === 'invalido') {
     statusText = 'PROTOCOLO INVÁLIDO';
     statusColor = COLORS.danger;
-  } else if (conclusion === 'reservas') {
+  } else if (conclusion === 'valido_reservas') {
     statusText = 'PROTOCOLO VÁLIDO CON RESERVAS';
+    statusColor = COLORS.warning;
+  }
+
+  // Detectar estilo defensivo en el texto de justificación
+  const justificacionValidez = validez.justificacionValidez || '';
+  if (justificacionValidez.includes('DEFENSIVO')) {
+    statusText = 'PROTOCOLO ACEPTABLE — ESTILO DEFENSIVO DOCUMENTADO';
     statusColor = COLORS.warning;
   }
 
@@ -217,6 +224,16 @@ export async function generateMMPI2PDF(data: InformeData): Promise<Blob> {
   doc.setTextColor(255, 255, 255);
   doc.setFontSize(11);
   doc.text(statusText, pageWidth / 2, y + 7, { align: 'center' });
+
+  // Mostrar justificación de validez completa (incluye estilo defensivo)
+  y += 15;
+  if (justificacionValidez) {
+    doc.setFontSize(9);
+    doc.setTextColor(...COLORS.gray);
+    const valLines = doc.splitTextToSize(justificacionValidez, pageWidth - margin * 2);
+    doc.text(valLines, margin, y);
+    y += valLines.length * 4 + 5;
+  }
 
   // =====================
   // ESCALAS CLÍNICAS
@@ -460,6 +477,154 @@ export async function generateMMPI2PDF(data: InformeData): Promise<Blob> {
       y += 4;
     });
     y += 3;
+  }
+
+  // =====================
+  // RASGOS NUCLEARES
+  // =====================
+  if (formulacion.rasgosNucleares?.length > 0) {
+    if (y > pageHeight - 60) {
+      doc.addPage();
+      y = margin;
+    }
+
+    doc.setFontSize(14);
+    doc.setTextColor(...COLORS.primary);
+    doc.text('RASGOS NUCLEARES DE PERSONALIDAD', margin, y);
+    y += 8;
+
+    formulacion.rasgosNucleares.forEach((rasgo: string) => {
+      if (y > pageHeight - 30) {
+        doc.addPage();
+        y = margin;
+      }
+      doc.setFontSize(9);
+      doc.setTextColor(0, 0, 0);
+      const rasgoLines = doc.splitTextToSize(rasgo, pageWidth - margin * 2);
+      doc.text(rasgoLines, margin, y);
+      y += rasgoLines.length * 4 + 5;
+    });
+  }
+
+  // =====================
+  // HARRIS-LINGOES
+  // =====================
+  const harrisLingoes = analysis.interpretacionHarrisLingoes || [];
+  if (harrisLingoes.length > 0) {
+    if (y > pageHeight - 60) {
+      doc.addPage();
+      y = margin;
+    }
+
+    doc.setFontSize(14);
+    doc.setTextColor(...COLORS.primary);
+    doc.text('SUBESCALAS HARRIS-LINGOES', margin, y);
+    y += 8;
+
+    harrisLingoes.forEach((grupo: any) => {
+      if (y > pageHeight - 40) {
+        doc.addPage();
+        y = margin;
+      }
+      doc.setFontSize(11);
+      doc.setTextColor(...COLORS.accent);
+      doc.text(`Escala ${grupo.escala}`, margin, y);
+      y += 6;
+
+      const hlData = grupo.subescalas.map((sub: any) => [
+        sub.codigo,
+        sub.nombre,
+        `Bruto: ${sub.bruto}`,
+        `T: ${sub.puntajeT}`,
+        sub.interpretacion.substring(0, 80)
+      ]);
+
+      autoTable(doc, {
+        startY: y,
+        head: [['Cod.', 'Nombre', 'Bruto', 'T', 'Interpretación']],
+        body: hlData,
+        theme: 'grid',
+        headStyles: { fillColor: COLORS.accent, textColor: 255, fontSize: 8 },
+        bodyStyles: { fontSize: 7, cellPadding: 2 },
+        columnStyles: {
+          0: { cellWidth: 15 },
+          1: { cellWidth: 50 },
+          4: { cellWidth: 80 }
+        }
+      });
+
+      y = (doc as any).lastAutoTable.finalY + 5;
+    });
+  }
+
+  // =====================
+  // ESCALAS DE CONTENIDO
+  // =====================
+  const contenido = analysis.interpretacionContenido || [];
+  if (contenido.length > 0) {
+    if (y > pageHeight - 60) {
+      doc.addPage();
+      y = margin;
+    }
+
+    doc.setFontSize(14);
+    doc.setTextColor(...COLORS.primary);
+    doc.text('ESCALAS DE CONTENIDO', margin, y);
+    y += 8;
+
+    const contData = contenido.map((esc: any) => [
+      esc.codigo,
+      esc.nombre,
+      `T: ${esc.puntajeT}`,
+      esc.elevacion,
+      esc.interpretacion.substring(0, 60)
+    ]);
+
+    autoTable(doc, {
+      startY: y,
+      head: [['Cod.', 'Nombre', 'T', 'Elevación', 'Interpretación']],
+      body: contData,
+      theme: 'grid',
+      headStyles: { fillColor: COLORS.accent, textColor: 255, fontSize: 8 },
+      bodyStyles: { fontSize: 7, cellPadding: 2 },
+    });
+
+    y = (doc as any).lastAutoTable.finalY + 5;
+  }
+
+  // =====================
+  // ESCALAS SUPLEMENTARIAS
+  // =====================
+  const suplementarias = analysis.interpretacionSuplementarias || [];
+  if (suplementarias.length > 0) {
+    if (y > pageHeight - 60) {
+      doc.addPage();
+      y = margin;
+    }
+
+    doc.setFontSize(14);
+    doc.setTextColor(...COLORS.primary);
+    doc.text('ESCALAS SUPLEMENTARIAS', margin, y);
+    y += 8;
+
+    const supData = suplementarias.map((esc: any) => [
+      esc.codigo,
+      esc.nombre,
+      `T: ${esc.puntajeT}`,
+      esc.elevacion,
+      esc.interpretacion.substring(0, 60)
+    ]);
+
+    autoTable(doc, {
+      startY: y,
+      head: [['Cod.', 'Nombre', 'T', 'Elevación', 'Interpretación']],
+      body: supData,
+      theme: 'grid',
+      headStyles: { fillColor: COLORS.accent, textColor: 255, fontSize: 8 },
+      bodyStyles: { fontSize: 7, cellPadding: 2 },
+    });
+
+    y = (doc as any).lastAutoTable.finalY + 5;
   }
 
   // =====================
