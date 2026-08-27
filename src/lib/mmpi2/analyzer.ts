@@ -545,8 +545,8 @@ export function analizarEscalasSuplementarias(protocol: MMPI2Protocol): Clinical
       correlatos: t >= 60 ? ['Ansiedad subjetiva intensa', 'Tensión muscular', 'Preocupación excesiva'] : []
     }),
     Es: (t) => ({
-      interp: t >= 55 ? 'Buena fortaleza del yo y recursos de afrontamiento.' : t <= 40 ? 'Fortaleza del yo reducida, vulnerabilidad al estrés.' : 'Fortaleza del yo dentro de límites normales.',
-      correlatos: t >= 55 ? ['Buena capacidad de afrontamiento', 'Recursos psicológicos adecuados'] : t <= 40 ? ['Vulnerabilidad al estrés', 'Menor capacidad de recuperación'] : []
+      interp: t >= 55 ? 'Buena fortaleza del yo y recursos de afrontamiento.' : t < 45 ? 'Fortaleza del yo reducida, recursos de afrontamiento limitados, menor resiliencia ante el estrés sostenido.' : 'Fortaleza del yo en el límite inferior del promedio, recursos de afrontamiento algo limitados.',
+      correlatos: t >= 55 ? ['Buena capacidad de afrontamiento', 'Recursos psicológicos adecuados'] : t < 45 ? ['Vulnerabilidad al estrés', 'Menor capacidad de recuperación', 'Recursos de afrontamiento limitados'] : ['Recursos de afrontamiento algo limitados']
     }),
     MACR: (t) => ({
       interp: t >= 65 ? 'Riesgo elevado de problemas relacionados con alcohol u otras sustancias.' : 'Riesgo bajo de problemas de adicciones.',
@@ -733,11 +733,13 @@ CONCLUSIÓN: El protocolo es aceptable para interpretación, pero los puntajes c
   const esElevado = suplementarias.find(s => s.codigo === 'Es');
   if (esElevado) {
     if (esElevado.puntajeT >= 55) {
-      recursosFortalezas.push('Buena fortaleza del yo y capacidad de afrontamiento');
-    } else if (esElevado.puntajeT <= 40) {
-      recursosFortalezas.push('Fortaleza del yo reducida, vulnerabilidad al estrés (Es T=' + esElevado.puntajeT + ')');
+      recursosFortalezas.push('Buena fortaleza del yo y capacidad de afrontamiento (Es T=' + esElevado.puntajeT + ')');
+    } else if (esElevado.puntajeT < 45) {
+      // T < 45 = por debajo del promedio = fortaleza del yo reducida
+      recursosFortalezas.push('Fortaleza del yo reducida, recursos de afrontamiento limitados, menor resiliencia ante el estrés sostenido (Es T=' + esElevado.puntajeT + ')');
     } else {
-      recursosFortalezas.push('Fortaleza del yo dentro de límites normativos (Es T=' + esElevado.puntajeT + ')');
+      // T 45-54 = límite inferior / normal bajo
+      recursosFortalezas.push('Fortaleza del yo en el límite inferior del promedio, recursos de afrontamiento algo limitados (Es T=' + esElevado.puntajeT + ')');
     }
   }
   
