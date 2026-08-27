@@ -38,7 +38,8 @@ import {
   Eye,
   X,
   Upload,
-  FileSpreadsheet
+  FileSpreadsheet,
+  Clock
 } from 'lucide-react'
 import { calificarMMPI2, RespuestaItem } from '@/lib/mmpi2/calificacion'
 import { convertirAT } from '@/lib/mmpi2/tablas-conversion'
@@ -1580,7 +1581,17 @@ export default function Home() {
                         </p>
                       ) : (
                         <div className="space-y-2">
-                          {informesGuardados.map((informe: any) => (
+                          {informesGuardados.map((informe: any) => {
+                            // Formatear fecha y hora de guardado
+                            const fechaGuardado = informe.createdAt
+                              ? new Date(informe.createdAt).toLocaleString('es-AR', {
+                                  day: '2-digit', month: '2-digit', year: 'numeric',
+                                  hour: '2-digit', minute: '2-digit',
+                                  timeZone: 'America/Buenos_Aires'
+                                })
+                              : informe.fechaEvaluacion || 'Sin fecha';
+                            
+                            return (
                             <div 
                               key={informe.id}
                               className="flex items-center justify-between p-3 rounded-lg border hover:bg-slate-50 dark:hover:bg-slate-800"
@@ -1588,7 +1599,12 @@ export default function Home() {
                               <div className="flex-1">
                                 <p className="font-medium">{informe.nombreEvaluado || 'Sin nombre'}</p>
                                 <p className="text-sm text-slate-500">
-                                  {informe.fechaEvaluacion || informe.createdAt?.split('T')[0]} - {informe.evaluador || 'Sin evaluador'}
+                                  <span className="inline-flex items-center gap-1">
+                                    <Clock className="w-3 h-3" />
+                                    Guardado: {fechaGuardado}
+                                  </span>
+                                  {' · '}
+                                  <span>{informe.evaluador || 'Sin evaluador'}</span>
                                 </p>
                               </div>
                               <div className="flex gap-2">
@@ -1608,7 +1624,8 @@ export default function Home() {
                                 </Button>
                               </div>
                             </div>
-                          ))}
+                            );
+                          })}
                         </div>
                       )}
                     </CardContent>
