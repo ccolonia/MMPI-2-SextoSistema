@@ -311,10 +311,10 @@ function parseExcel(buffer: Buffer): ResultadoMMPI2 {
   const gfBruto = safeNum(getCell(brutos, 31, 4), 0)
   const pkBruto = safeNum(getCell(brutos, 31, 5), 0)
   const psBruto = safeNum(getCell(brutos, 31, 6), 0)
-  const fpBruto = safeNum(getCell(brutos, 31, 8), 0)
-  const fbBruto = safeNum(getCell(brutos, 31, 9), 0)
-  const vrinBruto = safeNum(getCell(brutos, 31, 10), 0)
-  const trinBruto = safeNum(getCell(brutos, 31, 11), 0)
+  const fpBruto = safeNum(getCell(brutos, 31, 9), 0)   // F(p) en col 9
+  const fbBruto = safeNum(getCell(brutos, 31, 10), 0)  // Fb en col 10
+  const vrinBruto = safeNum(getCell(brutos, 31, 11), 0) // VRIN en col 11
+  const trinBruto = safeNum(getCell(brutos, 31, 12), 0) // TRIN en col 12
 
   // === T REALES de validez adicional desde Puntajes T R39 ===
   // R37: headers: GM, GF, PK, PS, _, _, F(p), Fb, VRIN, TRIN
