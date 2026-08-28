@@ -108,7 +108,7 @@ export default function LoginPage() {
           <h1 className="text-2xl font-bold text-[#121E14]" style={{ fontFamily: 'var(--font-plus-jakarta)' }}>
             Plataforma <span className="text-[#4F6F52]">Profesional</span>
           </h1>
-          <p className="text-sm text-[#6A8A70] mt-1">Sistema de evaluación psicológica MMPI-2</p>
+          <p className="text-sm text-[#6A8A70] mt-1">PsicoInformes Automatizados Six</p>
         </div>
 
         <Card className="border-[#85A28B]/30 bg-card/80 backdrop-blur">
