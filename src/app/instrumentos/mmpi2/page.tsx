@@ -483,6 +483,40 @@ export default function Home() {
     })
   }
 
+  // Exportar respuestas a Excel (2 columnas: A=Verdadero, B=Falso)
+  const handleExportarRespuestasExcel = async () => {
+    try {
+      // Construir datos: 567 filas, col A = V (1 si Verdadero), col B = F (1 si Falso)
+      const data: (number | null)[][] = []
+      for (let i = 1; i <= TOTAL_PREGUNTAS; i++) {
+        const resp = respuestas.get(i)
+        if (resp === true) {
+          data.push([1, null])  // Col A = 1 (Verdadero)
+        } else if (resp === false) {
+          data.push([null, 1])  // Col B = 1 (Falso)
+        } else {
+          data.push([null, null])  // No contesta
+        }
+      }
+
+      // Crear Excel con SheetJS
+      const XLSX = await import('xlsx')
+      const ws = XLSX.utils.aoa_to_sheet(data)
+      ws['!cols'] = [{ wch: 10 }, { wch: 10 }]
+      const wb = XLSX.utils.book_new()
+      XLSX.utils.book_append_sheet(wb, ws, 'Respuestas')
+
+      // Descargar
+      const nombre = protocol.demograficos.nombreEvaluado
+        ? `Respuestas_MMPI2_${protocol.demograficos.nombreEvaluado}.xlsx`
+        : 'Respuestas_MMPI2.xlsx'
+      XLSX.writeFile(wb, nombre)
+    } catch (error) {
+      console.error('Error exportando Excel:', error)
+      alert('Error al exportar el archivo Excel')
+    }
+  }
+
   // Calificar y convertir
   const handleCalificar = async () => {
     setLoading(true)
@@ -610,6 +644,17 @@ export default function Home() {
       const result = await response.json()
       setAnalysisResult(result)
       setActiveTab('resultados')
+
+      // Guardar respuestas en la base de datos (no bloqueante)
+      fetch('/api/mmpi2/guardar-respuestas', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({
+          respuestas: respuestasArray.map(r => ({ numero: r.numero, verdadero: r.verdadero })),
+          demograficos: protocol.demograficos,
+        })
+      }).catch(err => console.error('Error guardando en DB:', err))
     } catch (error) {
       console.error('Error en calificación:', error)
     } finally {
@@ -1442,6 +1487,15 @@ export default function Home() {
                         <div className="text-sm text-slate-600 dark:text-slate-300">
                           {answeredCount} de {TOTAL_PREGUNTAS} respondidas
                         </div>
+                        <Button
+                          onClick={handleExportarRespuestasExcel}
+                          disabled={answeredCount === 0}
+                          size="lg"
+                          className="px-6 py-4 text-base btn-sexto gap-2"
+                        >
+                          <FileDown className="w-5 h-5" />
+                          Exportar Excel
+                        </Button>
                         <Button 
                           onClick={handleCalificar} 
                           disabled={loading || answeredCount < 400}
