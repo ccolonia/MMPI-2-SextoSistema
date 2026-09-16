@@ -14,11 +14,13 @@ import { ITEMS_CALIFICACION, INDICADORES_EMOCIONALES, DCM_TIPO_1, DCM_TIPO_2 } f
 import { BenderProtocol, BenderAnalysisResult } from '@/lib/bender/types'
 import { analizarBender } from '@/lib/bender/analyzer'
 import { obtenerEdadMaduracion } from '@/lib/bender/tablas'
+import { InformeBenderView } from './components/InformeBenderView'
 
 export default function BenderPage() {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
   const [result, setResult] = useState<BenderAnalysisResult | null>(null)
+  const [protocolGuardado, setProtocolGuardado] = useState<BenderProtocol | null>(null)
   const [activeTab, setActiveTab] = useState<'ingreso' | 'resultados'>('ingreso')
 
   // Datos demográficos
@@ -119,6 +121,7 @@ export default function BenderPage() {
 
       const analisis = analizarBender(protocol)
       setResult(analisis)
+      setProtocolGuardado(protocol)
       setActiveTab('resultados')
     } catch (error) {
       console.error('Error en análisis:', error)
@@ -422,159 +425,14 @@ export default function BenderPage() {
           </div>
         )}
 
-        {activeTab === 'resultados' && result && (
-          <div className="max-w-5xl mx-auto space-y-6">
-            {/* Imágenes de los dibujos (si se cargaron) */}
-            {Object.keys(imagenesFigura).length > 0 && (
-              <Card className="border-[#85A28B]/30 bg-card">
-                <CardHeader>
-                  <CardTitle className="text-[#4F6F52] flex items-center gap-2">
-                    <ImageIcon className="w-5 h-5" />
-                    Dibujos del Paciente
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="grid grid-cols-3 md:grid-cols-5 gap-3">
-                    {Object.entries(imagenesFigura).map(([figura, img]) => (
-                      <div key={figura} className="text-center">
-                        <div className="border border-[#85A28B]/30 rounded-lg overflow-hidden bg-[#F5F1E8]">
-                          <img src={img} alt={`Figura ${figura}`} className="w-full h-24 object-cover" />
-                        </div>
-                        <p className="text-xs text-[#6A8A70] mt-1">Figura {figura}</p>
-                      </div>
-                    ))}
-                  </div>
-                </CardContent>
-              </Card>
-            )}
-
-            {/* Resultados */}
-            <Card className="border-[#85A28B]/30 bg-card">
-              <CardHeader>
-                <CardTitle className="text-[#4F6F52]">Resultados — {nombre}</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                {/* Eje I */}
-                <div>
-                  <h3 className="text-lg font-bold text-[#4F6F52] mb-3">Eje I: Madurez Perceptivo-Motriz</h3>
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-3">
-                    <div className="bg-[#F5F1E8] p-3 rounded-lg text-center">
-                      <p className="text-xs text-[#6A8A70]">Puntaje Directo</p>
-                      <p className="text-2xl font-bold text-[#4F6F52]">{result.puntajeDirecto}</p>
-                      <p className="text-xs text-[#6A8A70]">errores / 30</p>
-                    </div>
-                    <div className="bg-[#F5F1E8] p-3 rounded-lg text-center">
-                      <p className="text-xs text-[#6A8A70]">Edad Maduración</p>
-                      <p className="text-sm font-bold text-[#4F6F52]">{result.edadMaduracionEquivalente}</p>
-                    </div>
-                    <div className="bg-[#F5F1E8] p-3 rounded-lg text-center">
-                      <p className="text-xs text-[#6A8A70]">Nivel Grado</p>
-                      <p className="text-xs font-bold text-[#4F6F52]">{result.nivelRendimientoGrado}</p>
-                    </div>
-                    <div className="bg-[#8A3D3D]/10 p-3 rounded-lg text-center border border-[#8A3D3D]/20">
-                      <p className="text-xs text-[#8A3D3D]">Retraso</p>
-                      <p className="text-sm font-bold text-[#8A3D3D]">{result.retrasoMeses > 0 ? result.retrasoMeses + ' meses' : 'Sin retraso'}</p>
-                    </div>
-                  </div>
-                  <p className="text-sm text-[#121E14]">{result.retrasoInterpretacion}</p>
-                  
-                  <div className="mt-3 grid grid-cols-4 gap-2">
-                    <div className="text-center p-2 bg-[#DDE9DB]/50 rounded">
-                      <p className="text-xs text-[#6A8A70]">Distorsión</p>
-                      <p className="text-lg font-bold text-[#4F6F52]">{result.erroresPorCategoria.distorsion}</p>
-                    </div>
-                    <div className="text-center p-2 bg-[#DDE9DB]/50 rounded">
-                      <p className="text-xs text-[#6A8A70]">Rotación</p>
-                      <p className="text-lg font-bold text-[#4F6F52]">{result.erroresPorCategoria.rotacion}</p>
-                    </div>
-                    <div className="text-center p-2 bg-[#DDE9DB]/50 rounded">
-                      <p className="text-xs text-[#6A8A70]">Integración</p>
-                      <p className="text-lg font-bold text-[#4F6F52]">{result.erroresPorCategoria.integracion}</p>
-                    </div>
-                    <div className="text-center p-2 bg-[#DDE9DB]/50 rounded">
-                      <p className="text-xs text-[#6A8A70]">Perseveración</p>
-                      <p className="text-lg font-bold text-[#4F6F52]">{result.erroresPorCategoria.perseveracion}</p>
-                    </div>
-                  </div>
-                </div>
-
-                <Separator />
-
-                {/* Eje II: DCM */}
-                <div>
-                  <h3 className="text-lg font-bold text-[#4F6F52] mb-3">Eje II: Indicadores de DCM / Organicidad</h3>
-                  {result.dcmIndicadores.length > 0 ? (
-                    <div className="space-y-2">
-                      {result.dcmIndicadores.map((dcm, i) => (
-                        <div key={i} className="p-3 rounded-lg bg-[#8A3D3D]/5 border border-[#8A3D3D]/20">
-                          <div className="flex items-center gap-2 mb-1">
-                            <AlertTriangle className="w-4 h-4 text-[#8A3D3D]" />
-                            <span className="font-medium text-[#8A3D3D]">{dcm.figura} — {dcm.item}</span>
-                            <Badge className="bg-[#8A3D3D]/10 text-[#8A3D3D]">{dcm.nivel}</Badge>
-                          </div>
-                          <p className="text-sm text-[#121E14]">{dcm.criterio}</p>
-                          <p className="text-xs text-[#6A8A70] mt-1">{dcm.interpretacion}</p>
-                        </div>
-                      ))}
-                    </div>
-                  ) : (
-                    <div className="p-3 rounded-lg bg-[#DDE9DB]/30">
-                      <p className="text-sm text-[#6A8A70]">No se identifican indicadores de DCM significativos.</p>
-                    </div>
-                  )}
-                </div>
-
-                <Separator />
-
-                {/* Eje III: Emocional */}
-                <div>
-                  <h3 className="text-lg font-bold text-[#4F6F52] mb-3">Eje III: Indicadores de Desajuste Emocional</h3>
-                  <div className="p-3 rounded-lg bg-[#F5F1E8] mb-3">
-                    <p className="text-sm text-[#121E14]"><strong>{result.ieTotal}</strong> indicador(es) emocional(es) detectado(s).</p>
-                    <p className="text-sm text-[#6A8A70] mt-1">{result.ieSignificacion}</p>
-                  </div>
-                  {result.ieDetalle.length > 0 && (
-                    <div className="space-y-2">
-                      {result.ieDetalle.map((ie) => (
-                        <div key={ie.id} className="p-3 rounded-lg bg-[#DDE9DB]/30 border border-[#85A28B]/20">
-                          <div className="flex items-center gap-2 mb-1">
-                            <span className="font-mono text-xs font-bold text-[#4F6F52]">{ie.id}.</span>
-                            <span className="text-sm font-medium text-[#121E14]">{ie.nombre}</span>
-                          </div>
-                          <p className="text-xs text-[#6A8A70]">{ie.definicion}</p>
-                          <p className="text-sm text-[#121E14] mt-1">{ie.interpretacion}</p>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
-
-                <Separator />
-
-                {/* Síntesis */}
-                <div>
-                  <h3 className="text-lg font-bold text-[#4F6F52] mb-3">Síntesis Diagnóstica</h3>
-                  <div className="p-4 rounded-lg bg-[#F5F1E8] border border-[#85A28B]/20">
-                    <p className="text-sm text-[#121E14] whitespace-pre-line">{result.sintesis}</p>
-                  </div>
-                </div>
-
-                <Separator />
-
-                {/* Recomendaciones */}
-                <div>
-                  <h3 className="text-lg font-bold text-[#4F6F52] mb-3">Recomendaciones</h3>
-                  <ul className="space-y-2">
-                    {result.recomendaciones.map((rec, i) => (
-                      <li key={i} className="flex items-start gap-2 p-2 rounded-lg bg-[#DDE9DB]/30">
-                        <CheckCircle className="w-4 h-4 text-[#85A28B] mt-0.5 shrink-0" />
-                        <span className="text-sm text-[#121E14]">{rec}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              </CardContent>
-            </Card>
+        {activeTab === 'resultados' && result && protocolGuardado && (
+          <div className="space-y-4">
+            {/* Informe institucional completo con botón de imprimir/PDF */}
+            <InformeBenderView 
+              protocol={protocolGuardado} 
+              result={result} 
+              imagenesFigura={imagenesFigura} 
+            />
 
             {/* Botones */}
             <div className="flex justify-center gap-4 pb-8">
