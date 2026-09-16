@@ -137,7 +137,7 @@ export function analizarBender(protocol: BenderProtocol): BenderAnalysisResult {
   }
   
   // === SÍNTESIS DIAGNÓSTICA ===
-  const sintesis = generarSintesis(protocol, puntajeDirecto, edadMaduracion.edad, retraso.interpretacion, dcmIndicadores, ieTotal, ieSignificacion)
+  const sintesis = generarSintesis(protocol, puntajeDirecto, edadMaduracionEquivalente, retrasoInterpretacion, dcmIndicadores, ieTotal, ieSignificacion)
   
   // === RECOMENDACIONES ===
   const recomendaciones = generarRecomendaciones(puntajeDirecto, dcmPresente, ieTotal, protocol.observaciones.tiempoMinutos)
