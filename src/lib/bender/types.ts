@@ -34,6 +34,7 @@ export interface IndicadorDCM {
 
 // Datos del protocolo Bender
 export interface BenderProtocol {
+  tipoEvaluacion: 'koppitz' | 'adultos'  // selector de modalidad
   demograficos: {
     nombreEvaluado: string
     fechaNacimiento: string

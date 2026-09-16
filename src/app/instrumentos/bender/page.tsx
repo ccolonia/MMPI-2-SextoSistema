@@ -23,6 +23,9 @@ export default function BenderPage() {
   const [protocolGuardado, setProtocolGuardado] = useState<BenderProtocol | null>(null)
   const [activeTab, setActiveTab] = useState<'ingreso' | 'resultados'>('ingreso')
 
+  // Modalidad de evaluación
+  const [tipoEvaluacion, setTipoEvaluacion] = useState<'koppitz' | 'adultos'>('koppitz')
+
   // Datos demográficos
   const [nombre, setNombre] = useState('')
   const [fechaNacimiento, setFechaNacimiento] = useState('')
@@ -92,6 +95,7 @@ export default function BenderPage() {
     setLoading(true)
     try {
       const protocol: BenderProtocol = {
+        tipoEvaluacion,
         demograficos: {
           nombreEvaluado: nombre,
           fechaNacimiento,
@@ -265,7 +269,40 @@ export default function BenderPage() {
         {activeTab === 'ingreso' && (
           <div className="grid grid-cols-1 lg:grid-cols-[1fr_300px] gap-6">
             <div className="space-y-6">
-              {/* Datos del evaluado */}
+              {/* Selector de modalidad */}
+            <Card className="border-[#85A28B]/30 bg-card">
+              <CardHeader>
+                <CardTitle className="text-[#4F6F52]">Modalidad de Evaluación</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="flex gap-3">
+                  <button
+                    onClick={() => setTipoEvaluacion('koppitz')}
+                    className={`flex-1 p-4 rounded-lg border-2 text-left transition-colors ${
+                      tipoEvaluacion === 'koppitz'
+                        ? 'border-[#4F6F52] bg-[#DDE9DB]/50'
+                        : 'border-[#85A28B]/20 hover:border-[#85A28B]/50'
+                    }`}
+                  >
+                    <p className="font-bold text-[#4F6F52] text-sm">👶 Koppitz (Infantil)</p>
+                    <p className="text-xs text-[#6A8A70] mt-1">5 a 11 años — Baremos de maduración visomotriz</p>
+                  </button>
+                  <button
+                    onClick={() => setTipoEvaluacion('adultos')}
+                    className={`flex-1 p-4 rounded-lg border-2 text-left transition-colors ${
+                      tipoEvaluacion === 'adultos'
+                        ? 'border-[#4F6F52] bg-[#DDE9DB]/50'
+                        : 'border-[#85A28B]/20 hover:border-[#85A28B]/50'
+                    }`}
+                  >
+                    <p className="font-bold text-[#4F6F52] text-sm">👤 Adultos (Organicidad)</p>
+                    <p className="text-xs text-[#6A8A70] mt-1">12+ años — Análisis cualitativo de DCM y disfunción neurológica</p>
+                  </button>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Datos del evaluado */}
               <Card className="border-[#85A28B]/30 bg-card">
                 <CardHeader>
                   <CardTitle className="text-[#4F6F52]">Datos del Evaluado</CardTitle>

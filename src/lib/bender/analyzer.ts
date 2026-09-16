@@ -6,9 +6,9 @@ import { ITEMS_CALIFICACION, INDICADORES_EMOCIONALES, DCM_TIPO_1, DCM_TIPO_2 } f
 import { obtenerEdadMaduracion, calcularRetraso } from './tablas'
 
 export function analizarBender(protocol: BenderProtocol): BenderAnalysisResult {
-  // === EVALUACIÓN ADAPTATIVA SEGÚN EDAD ===
+  // === EVALUACIÓN ADAPTATIVA SEGÚN EDAD Y MODALIDAD ===
   const edadAnios = protocol.demograficos.edadAnios
-  const esPoblacionInfantil = edadAnios >= 5 && edadAnios <= 11
+  const esPoblacionInfantil = protocol.tipoEvaluacion === 'koppitz' || (edadAnios >= 5 && edadAnios <= 11)
 
   // === EJE I: MADUREZ PERCEPTIVO-MOTRIZ ===
   
@@ -32,11 +32,20 @@ export function analizarBender(protocol: BenderProtocol): BenderAnalysisResult {
     retrasoMeses = retraso.meses
     retrasoInterpretacion = retraso.interpretacion
   } else {
-    // Protocolo para adultos / mayores de 12 años
+    // Protocolo para adultos / mayores de 12 años (Criterios de Organicidad — L. Bender / M. Hutt)
     edadMaduracionEquivalente = 'No aplicable (Sujeto fuera de rango normativo infantil de Koppitz)'
-    nivelRendimientoGrado = 'Evaluación orientada al análisis cualitativo de organicidad (DCM) y disfunción visomotriz en adultos.'
+    nivelRendimientoGrado = 'Análisis centrado en rotación, fragmentación, simplificación y pérdida de organización espacial.'
     retrasoMeses = 0
-    retrasoInterpretacion = 'Los errores no se traducen en edad cronológica de retraso. El análisis se enfoca en indicadores cualitativos de organicidad y disfunción visomotriz.'
+    
+    // Nivel de organicidad según cantidad de indicadores
+    let nivelOrganicidad = 'Sin indicadores significativos de organicidad.'
+    if (puntajeDirecto >= 4) {
+      nivelOrganicidad = 'Alto índice de indicadores de organicidad / disfunción neurológica. Requiere correlación clínica exhaustiva.'
+    } else if (puntajeDirecto >= 2) {
+      nivelOrganicidad = 'Presencia moderada de alteraciones visomotrices y desorganización espacial.'
+    }
+    
+    retrasoInterpretacion = `En población adulta, el protocolo no evalúa maduración cronológica, sino control inhibitorio, integración visoespacial e integridad neurológica. ${nivelOrganicidad}`
   }
   
   // Desglose por categoría de error
