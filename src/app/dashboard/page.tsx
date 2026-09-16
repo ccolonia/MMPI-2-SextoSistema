@@ -179,19 +179,25 @@ export default function DashboardPage() {
               </CardContent>
             </Card>
 
-            {/* Placeholder para futuros instrumentos */}
-            <Card className="border-[#85A28B]/20 bg-card/50 opacity-50">
+            {/* Bender-Koppitz - ACTIVO */}
+            <Card className="border-[#85A28B]/30 bg-card hover:border-[#85A28B]/60 transition-colors cursor-pointer" onClick={() => router.push('/instrumentos/bender')}>
               <CardHeader>
                 <div className="flex items-center gap-3">
-                  <div className="p-2 rounded-lg bg-[#2E4230]">
+                  <div className="p-2 rounded-lg bg-[#85A28B]/10">
                     <Brain className="w-6 h-6 text-[#85A28B]" />
                   </div>
                   <div>
-                    <CardTitle className="text-[#6A8A70]">Bender</CardTitle>
-                    <CardDescription>Test Gestáltico Visomotor (próximamente)</CardDescription>
+                    <CardTitle className="text-[#121E14]">Bender-Koppitz</CardTitle>
+                    <CardDescription>Test Gestáltico Visomotor de Bender</CardDescription>
                   </div>
                 </div>
               </CardHeader>
+              <CardContent>
+                <Button className="w-full btn-sexto">
+                  <Plus className="w-4 h-4 mr-2" />
+                  Nueva evaluación
+                </Button>
+              </CardContent>
             </Card>
 
             <Card className="border-[#85A28B]/20 bg-card/50 opacity-50">
