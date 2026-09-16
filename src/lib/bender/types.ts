@@ -66,6 +66,9 @@ export interface BenderProtocol {
   
   // Indicadores DCM (cuáles están presentes)
   indicadoresDCM: string[]  // ej: ["I-b", "I-c", "II-a", "II-g"]
+
+  // NUEVO: Imágenes de los dibujos del paciente por figura (base64)
+  imagenesFigura?: Record<string, string>  // { "A": "data:image/...", "1": "data:image/..." }
 }
 
 // Resultado del análisis
