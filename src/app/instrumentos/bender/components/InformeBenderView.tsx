@@ -101,13 +101,13 @@ export const InformeBenderView: React.FC<InformeViewProps> = ({ protocol, result
         </div>
       </div>
 
-      {/* Galería de Dibujos del Paciente */}
+      {/* Galería de Dibujos del Paciente — protegido contra cortes de página */}
       {Object.keys(imagenesFigura).length > 0 && (
-        <div className="space-y-2">
+        <section className="space-y-2 break-inside-avoid page-break-inside-avoid">
           <h2 className="text-sm font-bold text-white bg-[#4F6F52] px-4 py-2 rounded">REGISTRO GRÁFICO DEL PROTOCOLO (ANEXO VISUAL)</h2>
           <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-3 px-2">
             {Object.entries(imagenesFigura).map(([key, url]) => (
-              <div key={key} className="border border-[#85A28B]/30 rounded-lg p-2 bg-[#F5F1E8] text-center space-y-1">
+              <div key={key} className="border border-[#85A28B]/30 rounded-lg p-2 bg-[#F5F1E8] text-center space-y-1 break-inside-avoid">
                 <span className="text-xs font-bold text-[#4F6F52] uppercase">Figura {key}</span>
                 <div className="h-24 w-full flex items-center justify-center overflow-hidden bg-white rounded border border-[#85A28B]/20">
                   <img src={url as string} alt={`Figura ${key}`} className="object-contain h-full w-full" />
@@ -115,7 +115,7 @@ export const InformeBenderView: React.FC<InformeViewProps> = ({ protocol, result
               </div>
             ))}
           </div>
-        </div>
+        </section>
       )}
 
       {/* Secc. 3: Resultados Cuantitativos */}
@@ -144,7 +144,11 @@ export const InformeBenderView: React.FC<InformeViewProps> = ({ protocol, result
               <tr>
                 <td className="border border-[#85A28B]/30 p-2.5 font-medium">Nivel de Rendimiento por Grado Escolar</td>
                 <td className="border border-[#85A28B]/30 p-2.5">{result.nivelRendimientoGrado}</td>
-                <td className="border border-[#85A28B]/30 p-2.5 text-[#6A8A70]">Inmadurez visomotora relevante para las exigencias del grado actual.</td>
+                <td className="border border-[#85A28B]/30 p-2.5 text-[#6A8A70]">
+                  {d.edadAnios >= 5 && d.edadAnios <= 11 
+                    ? 'Inmadurez visomotora relevante para las exigencias del grado actual.' 
+                    : 'Análisis cualitativo aplicable a población adulta.'}
+                </td>
               </tr>
               <tr>
                 <td className="border border-[#85A28B]/30 p-2.5 font-medium">Desglose por Categoría de Error</td>
@@ -256,13 +260,15 @@ export const InformeBenderView: React.FC<InformeViewProps> = ({ protocol, result
         </ul>
       </div>
 
-      {/* Firma */}
-      <div className="pt-8 grid grid-cols-2 gap-8 text-center text-sm text-[#121E14]">
-        <div className="border-t border-[#6A8A70] pt-2">
+      {/* Firma — protegida para que no se separe en hojas distintas */}
+      <div className="mt-10 grid grid-cols-2 gap-8 break-inside-avoid page-break-inside-avoid pt-8 border-t border-dashed border-[#85A28B]/40 text-center text-sm text-[#121E14]">
+        <div>
+          <div className="h-12 border-b border-[#121E14]/40 mx-8 mb-2"></div>
           <p className="font-bold">{d.evaluador || 'Lic. en Psicología / Neuropsicología'}</p>
           <p className="text-xs text-[#6A8A70]">Matrícula Prof. N.º ____</p>
         </div>
-        <div className="border-t border-[#6A8A70] pt-2">
+        <div>
+          <div className="h-12 border-b border-[#121E14]/40 mx-8 mb-2"></div>
           <p className="font-bold">Departamento de Orientación / Psicopedagogía</p>
           <p className="text-xs text-[#6A8A70]">Firma y Sello Profesional</p>
         </div>

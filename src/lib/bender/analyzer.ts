@@ -6,17 +6,38 @@ import { ITEMS_CALIFICACION, INDICADORES_EMOCIONALES, DCM_TIPO_1, DCM_TIPO_2 } f
 import { obtenerEdadMaduracion, calcularRetraso } from './tablas'
 
 export function analizarBender(protocol: BenderProtocol): BenderAnalysisResult {
+  // === EVALUACIÓN ADAPTATIVA SEGÚN EDAD ===
+  const edadAnios = protocol.demograficos.edadAnios
+  const esPoblacionInfantil = edadAnios >= 5 && edadAnios <= 11
+
   // === EJE I: MADUREZ PERCEPTIVO-MOTRIZ ===
   
   // Calcular puntaje directo (total de errores)
   const puntajeDirecto = Object.values(protocol.items).reduce((sum, val) => sum + val, 0)
   
-  // Obtener edad de maduración equivalente
-  const edadMaduracion = obtenerEdadMaduracion(puntajeDirecto)
-  
-  // Calcular retraso
-  const edadCronologicaMeses = protocol.demograficos.edadAnios * 12 + protocol.demograficos.edadMeses
-  const retraso = calcularRetraso(edadCronologicaMeses, puntajeDirecto)
+  // Evaluación adaptativa según edad
+  let edadMaduracionEquivalente: string
+  let nivelRendimientoGrado: string
+  let retrasoMeses: number
+  let retrasoInterpretacion: string
+
+  if (esPoblacionInfantil) {
+    // Baremos estándar de Koppitz (5 a 11 años)
+    const edadMaduracion = obtenerEdadMaduracion(puntajeDirecto)
+    edadMaduracionEquivalente = edadMaduracion.edad
+    nivelRendimientoGrado = edadMaduracion.nivelGrado
+    
+    const edadCronologicaMeses = protocol.demograficos.edadAnios * 12 + protocol.demograficos.edadMeses
+    const retraso = calcularRetraso(edadCronologicaMeses, puntajeDirecto)
+    retrasoMeses = retraso.meses
+    retrasoInterpretacion = retraso.interpretacion
+  } else {
+    // Protocolo para adultos / mayores de 12 años
+    edadMaduracionEquivalente = 'No aplicable (Sujeto fuera de rango normativo infantil de Koppitz)'
+    nivelRendimientoGrado = 'Evaluación orientada al análisis cualitativo de organicidad (DCM) y disfunción visomotriz en adultos.'
+    retrasoMeses = 0
+    retrasoInterpretacion = 'Los errores no se traducen en edad cronológica de retraso. El análisis se enfoca en indicadores cualitativos de organicidad y disfunción visomotriz.'
+  }
   
   // Desglose por categoría de error
   const erroresPorCategoria = {
@@ -123,10 +144,10 @@ export function analizarBender(protocol: BenderProtocol): BenderAnalysisResult {
   
   return {
     puntajeDirecto,
-    edadMaduracionEquivalente: edadMaduracion.edad,
-    nivelRendimientoGrado: edadMaduracion.nivelGrado,
-    retrasoMeses: retraso.meses,
-    retrasoInterpretacion: retraso.interpretacion,
+    edadMaduracionEquivalente: edadMaduracionEquivalente,
+    nivelRendimientoGrado: nivelRendimientoGrado,
+    retrasoMeses: retrasoMeses,
+    retrasoInterpretacion: retrasoInterpretacion,
     erroresPorCategoria,
     erroresDetalle,
     dcmPresente,
